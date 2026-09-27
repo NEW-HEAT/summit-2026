@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-24",
+  "number": 24,
+  "title": "are you ready?",
+  "kind": "film",
+  "notes": "are you ready?\nHold for the room. Loop the supplied audio here when available. Start the closing film when ready; stop the loop before film sound begins. All speaking finishes before the film. Its natural end leads directly to the living flame.",
+  "duration": null,
+  "background": "#000000",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": null,
+    "label": "",
+    "media": null,
+    "audioLoop": {
+      "src": null,
+      "volume": 0.8
+    }
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "are you ready?",
+      "x": 80,
+      "y": 265,
+      "width": 1120,
+      "size": 100,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "center"
+    }
+  ],
+  "speaker": {
+    "mode": "exact",
+    "text": "are you ready?",
+    "points": [
+      "Hold for the room",
+      "Loop audio here once the snippet is supplied",
+      "Start the film when ready; audio loop stops first"
+    ]
+  }
+}

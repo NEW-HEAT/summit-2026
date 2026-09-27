@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-05",
+  "number": 5,
+  "title": "Hotrod",
+  "kind": "cue",
+  "notes": "My fiancé’s grandpa calls me Hotrod.\n        He has no idea what I do for work, \n        but given I’m building New Heat, the nickname is fitting\n        Im a University of Florida Grad, a Bilingual Nomad; \n        a Frugal Builder, and a Terrible Quitter",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": null,
+    "label": "Hotrod background photo",
+    "media": "assets/hotrod-background.jpg",
+    "fit": "cover",
+    "position": [
+      50,
+      25
+    ],
+    "scrim": "bottom"
+  },
+  "overlays": [
+    {
+      "id": "bullet-1",
+      "text": "University of Florida grad",
+      "x": 72,
+      "y": 582,
+      "width": 440,
+      "size": 36,
+      "font": "Roboto Black",
+      "color": "#FFFFFF",
+      "align": "left",
+      "reveal": 1,
+      "bullet": false
+    },
+    {
+      "id": "bullet-2",
+      "text": "Bilingual nomad",
+      "x": 72,
+      "y": 628,
+      "width": 440,
+      "size": 36,
+      "font": "Roboto Black",
+      "color": "#FFFFFF",
+      "align": "left",
+      "reveal": 2,
+      "bullet": false
+    },
+    {
+      "id": "bullet-3",
+      "text": "Frugal builder",
+      "x": 808,
+      "y": 582,
+      "width": 400,
+      "size": 36,
+      "font": "Roboto Black",
+      "color": "#FFFFFF",
+      "align": "right",
+      "reveal": 3,
+      "bullet": false
+    },
+    {
+      "id": "bullet-4",
+      "text": "Terrible quitter",
+      "x": 808,
+      "y": 628,
+      "width": 400,
+      "size": 36,
+      "font": "Roboto Black",
+      "color": "#FFFFFF",
+      "align": "right",
+      "reveal": 4,
+      "bullet": false
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "My fiancé’s grandpa calls me Hotrod",
+      "University of Florida grad · Bilingual nomad",
+      "Frugal builder · Terrible quitter"
+    ]
+  }
+}

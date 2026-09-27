@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-04",
+  "number": 4,
+  "title": "Hobbies / Clock",
+  "kind": "cue",
+  "notes": "Hands up if you have more hobbies than free time? (Play)\nPause. ↑ increases the clock speed.",
+  "duration": 18,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 1.9,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 580,
+      "y": 70,
+      "width": 650,
+      "height": 580
+    }
+  },
+  "scene": {
+    "preset": "clock",
+    "label": "",
+    "media": null,
+    "slot": null
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "More hobbies\nthan free time?",
+      "x": 72,
+      "y": 260,
+      "width": 510,
+      "size": 54,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "exact",
+    "text": "Hands up if you have more hobbies than free time?",
+    "points": [
+      "Pause for hands",
+      "↑ increases the clock speed"
+    ]
+  }
+}

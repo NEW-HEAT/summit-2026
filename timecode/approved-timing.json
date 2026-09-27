@@ -1,0 +1,154 @@
+{
+  "kind": "user-requested-v005-exact-date-lock",
+  "asOfDate": "2026-09-03",
+  "showManifestSha256": "16ee39efe0f8d53d9065d154536c681b83c5e55ba63d9d542b9116b698a92296",
+  "draftSha256": "589d262d5dbb0a525e2851879cdef495b97801ba8f66a984a43e0cc2622dbdb6",
+  "fps": 60,
+  "frameCount": 8826,
+  "durationSeconds": 147.1,
+  "masterFrames30": [
+    1423,
+    5836
+  ],
+  "phases": [
+    {
+      "phase": "Earlier memories, each playing forward",
+      "localFrames60": [
+        0,
+        1854
+      ],
+      "masterFrames30": [
+        1423,
+        2350
+      ],
+      "currentDates": "Sep 06 2026 \u2192 Jan 01 2023",
+      "proposedDates": "Exact 32 user-supplied place ranges, in table order; forward playback at camera beat progress 0.32\u20130.94; source final tail returns to Jan 01 2023 by frame 1848"
+    },
+    {
+      "phase": "Year-range handoff",
+      "localFrames60": [
+        1854,
+        2070
+      ],
+      "masterFrames30": [
+        2350,
+        2458
+      ],
+      "currentDates": "Jan 01 2023 \u2192 2022\u20132023 range",
+      "proposedDates": "Highlight 2022\u20132023 range"
+    },
+    {
+      "phase": "Personal-history launch",
+      "localFrames60": [
+        2070,
+        2130
+      ],
+      "masterFrames30": [
+        2458,
+        2488
+      ],
+      "currentDates": "2022\u20132023 range \u2192 Jan 01 2023",
+      "proposedDates": "Resolve range to Jan 01 2023"
+    },
+    {
+      "phase": "Personal history forward",
+      "localFrames60": [
+        2130,
+        5730
+      ],
+      "masterFrames30": [
+        2488,
+        4288
+      ],
+      "currentDates": "Jan 01 2023 \u2192 Aug 30 2026",
+      "proposedDates": "Jan 01 2023 \u2192 Sep 03 2026"
+    },
+    {
+      "phase": "Present-day breath",
+      "localFrames60": [
+        5730,
+        5748
+      ],
+      "masterFrames30": [
+        4288,
+        4297
+      ],
+      "currentDates": "Hold Aug 30 2026; saved edit includes a 0.700s gap before community timecode",
+      "proposedDates": "Hold Sep 03 2026"
+    },
+    {
+      "phase": "Expanding three-second decade rewind",
+      "localFrames60": [
+        5748,
+        5928
+      ],
+      "masterFrames30": [
+        4297,
+        4387
+      ],
+      "currentDates": "Aug 30 2026 \u2192 Jan 04 2016",
+      "proposedDates": "Sep 03 2026 \u2192 Jan 04 2016"
+    },
+    {
+      "phase": "Community history forward",
+      "localFrames60": [
+        5928,
+        8680
+      ],
+      "masterFrames30": [
+        4387,
+        5763
+      ],
+      "currentDates": "Jan 04 2016 \u2192 Aug 31 2026",
+      "proposedDates": "Jan 04 2016 \u2192 Sep 03 2026"
+    },
+    {
+      "phase": "Full-decade enlargement and fade",
+      "localFrames60": [
+        8680,
+        8826
+      ],
+      "masterFrames30": [
+        5763,
+        5836
+      ],
+      "currentDates": "Hold Aug 31 2026",
+      "proposedDates": "2016\u20132026 grows to 76px, then fades to transparent"
+    }
+  ],
+  "firstFrame": "Sep 03 2026, scrubber at right edge",
+  "lastFrame": "Fully transparent after the enlarged 2016\u20132026 recap",
+  "revisionInstruction": "Lock the opening directly to Rich's exact 32-place date table and incoming camera playback curve. Preserve overlaps, single-day visits, and supplied order.",
+  "revision": {
+    "rewindDurationSeconds": 3,
+    "rewindLocalSeconds": [
+      95.8,
+      98.8
+    ],
+    "axisExpansionSeconds": 2.6,
+    "sameTotalDuration": true,
+    "opening": "Exact place-date-lock.json windows; no synthetic equal date intervals",
+    "axisAndCursor": "Continuous axis expansion with visible full start-date transition; current cursor crosses in three seconds",
+    "finale": {
+      "growLocalFrames60": [
+        8680,
+        8728
+      ],
+      "fullRange": "2016\u20132026",
+      "typeSizePixels": 76,
+      "fadeLocalFrames60": [
+        8760,
+        8826
+      ],
+      "lastFrameAlpha": 0
+    },
+    "openingAxisStart": "2022-01-01",
+    "focusLensExtraPixels": 180,
+    "cameraPlaybackFractions": [
+      0.32,
+      0.94
+    ],
+    "focusMinimumWidthPixels": 208,
+    "placeDateLockSha256": "7f74d21e841bfb6925f39091b0d8f0035189bdda2f563b1b210bc3e32875beec"
+  }
+}

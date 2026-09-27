@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "kind": "bold-projector-style",
+  "fontWeight": 700,
+  "dateSizePixels": 48,
+  "rangeSizePixels": 31,
+  "endpointYearSizePixels": 28,
+  "finaleSizePixels": 82,
+  "textKeylinePixels": 3.5,
+  "textShadowBlurPixels": 6,
+  "baselinePixels": 3.5,
+  "inactiveRangePixels": 4,
+  "highlightRangePixels": 8,
+  "palmRangePixels": 6,
+  "rangeEndpointPixels": 2.5,
+  "cursorRadiusPixels": 7,
+  "cursorStrokePixels": 3,
+  "directionStrokePixels": 2.5
+}

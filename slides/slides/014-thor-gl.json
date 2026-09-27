@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-14",
+  "number": 14,
+  "title": "thor.gl",
+  "kind": "media",
+  "notes": "Why do we create slideshows of geospatial context when we could manipulate the globe directly?",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "14-thor",
+    "label": "thor.gl — Hammer + Hero",
+    "media": null,
+    "embed": "http://127.0.0.1:5178/",
+    "projectLink": {
+      "url": "https://github.com/NEW-HEAT/thor.gl",
+      "label": "NEW-HEAT/thor.gl"
+    }
+  },
+  "overlays": [],
+  "speaker": {
+    "mode": "exact",
+    "text": "Why do we create slideshows of geospatial context when we could manipulate the globe directly?",
+    "points": [
+      "Hover Hammer + Hero to build anticipation",
+      "Click → hammer + hero → thor.gl",
+      "All six motion gestures start enabled"
+    ]
+  }
+}

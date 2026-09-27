@@ -1,0 +1,253 @@
+{
+  "state": "SOURCE_AND_SCREENSHOTS",
+  "checkedAt": "2026-09-27T21:28:19.551219+00:00",
+  "sourceFiles": 483,
+  "checks": {
+    "credentialAndPrivatePathScan": "PASS",
+    "freshFullRenders": "UNVERIFIED",
+    "freshBrowserAcceptance": "UNVERIFIED",
+    "allPrivateInputsArchived": "UNVERIFIED",
+    "screenshotVisualReview": {
+      "status": "PASS",
+      "updated": [
+        "opening",
+        "rewind",
+        "personal",
+        "closing"
+      ],
+      "source": "Frames extracted from existing completed movies, visually reviewed."
+    },
+    "closingCuration": {
+      "timelineParity": {
+        "status": "PASS",
+        "frames": 2220,
+        "sha256": "3687eb13b4e3c692e758031feceb1f3d03491b673632973d928e6ad45c4aec9b"
+      },
+      "bridgeProxyParity": {
+        "status": "PASS",
+        "sampledFrames": 13
+      },
+      "browserBundle": {
+        "status": "PASS",
+        "files": 2
+      },
+      "freshGpuRender": "UNVERIFIED",
+      "surfaceAndTileTests": {
+        "status": "PASS",
+        "files": 2,
+        "tests": 4
+      },
+      "frozenInputValidation": {
+        "status": "PASS",
+        "cases": 7
+      },
+      "captureSyntax": "PASS",
+      "standardViteBuild": {
+        "status": "UNVERIFIED",
+        "reason": "A clean dependency installation was not performed under disk pressure. Browser bundling passed with existing local dependencies; attempts to adapt those dependencies to Vite did not complete."
+      },
+      "preparationSyntax": {
+        "status": "PASS",
+        "javascript": 2,
+        "python": 2,
+        "swift": 1,
+        "execution": "UNVERIFIED"
+      }
+    },
+    "folderCuration": {
+      "rendererTests": {
+        "status": "PASS",
+        "files": 75,
+        "tests": 207,
+        "note": "Seven tests of the removed city-name alternative retired; four current handoff tests restored."
+      },
+      "slideTests": {
+        "status": "PASS",
+        "tests": 34
+      },
+      "bundles": {
+        "status": "PASS",
+        "browserEntries": 12,
+        "cliEntries": 4,
+        "dependencyMode": "Existing local dependencies, read only; no clean install"
+      },
+      "timecodeModel": {
+        "status": "PASS",
+        "frames": 8826,
+        "mode": "Original model assertions ran; still and movie generation skipped."
+      },
+      "pythonSyntax": {
+        "status": "PASS",
+        "files": 2
+      },
+      "readmeLinks": "PASS",
+      "freshBrowserAcceptance": "UNVERIFIED",
+      "freshFullRenders": "UNVERIFIED",
+      "cleanDependencyInstall": "UNVERIFIED"
+    }
+  },
+  "recordings": {
+    "hosting": "YouTube",
+    "url": "https://www.youtube.com/watch?v=Rp-f-tjqKck",
+    "githubRenders": "Removed all 36 uploaded render assets at user request. No further movie uploads are planned."
+  },
+  "cleanup": {
+    "initialCleanup": {
+      "deletedFiles": 55445,
+      "logicalBytes": 7889848425,
+      "observedAvailableIncreaseBytes": 6729859072,
+      "batchHashes": [
+        "84aab0a77175cbb5bc218bf97db678b8fdae3c00ce98ce30a7796ed84d2adbd5",
+        "09da95985128a7007543da15eea1624d08de78f17a547a49507e876ca5a8b55a",
+        "6a2eeee08585cc0840a2837f72653b5d691948bcf9470be5a84f846f10415f80",
+        "3950cfd91d8210c599f93606162062daebea2a2cd0d5a68195a2b0a2b618e3d0"
+      ],
+      "preserved": "Current movies, CapCut references, private inputs, source suppliers and NEWHEAT app checkout.",
+      "logicalBytesNote": "Includes an extra hardlink to the presentation master; measured recovered space is observedAvailableIncreaseBytes."
+    },
+    "renderRetirement": {
+      "deletedFiles": 16454,
+      "deletedMovieFiles": 71,
+      "logicalBytes": 24030460833,
+      "observedAvailableIncreaseBytes": 13030891520,
+      "batchHashes": [
+        "fe8694820ee80f83c0f1a7bed7f0925bb56be41a29f2d764c73fac7913b0cd65",
+        "7c1a0815d4fb0ae61118f9e50a340a6dfde498062d9080196c3a7b277db4105a",
+        "5ff190e6bf5e26b26413de84d727ef5502ab07ae9072d127eb3b8b7d7209cc0d",
+        "68502889026fb5a5c63b338c159432ccb613c2856037db8569171d34826175db"
+      ],
+      "removed": "Local Summit movie exports, render tracks and reviews, embedded slide videos, frame caches, unused prototype supplier downloads, exact duplicate source/input snapshot, and compiled caches.",
+      "preserved": "Curated Git source and screenshots, unique private inputs and original footage, CapCut metadata, unrelated exports, and all files outside this project.",
+      "localEditing": "Regenerate or relink removed media before reusing the old CapCut edit or local slide presentation.",
+      "logicalBytesNote": "Logical file size and observed free-space change are distinct; system-wide free space also changes independently of this cleanup."
+    }
+  },
+  "limitations": [
+    "Opening basemap supplier image was not found.",
+    "Private route, contribution and closing-scene inputs are excluded from Git.",
+    "Large slide video assets and community frozen avatar/manifest inputs are not in Git.",
+    "Shared NEWHEAT content automation dependencies have not been moved."
+  ],
+  "previousChecks": {
+    "checkedAt": "2026-09-27T19:30:34.378209+00:00",
+    "note": "Checks from before closing-folder curation; optional typography is no longer published.",
+    "slideBuild": "PASS",
+    "slideTests": {
+      "status": "PASS",
+      "tests": 34
+    },
+    "rendererTests": {
+      "status": "PASS",
+      "files": 75,
+      "tests": 210
+    },
+    "typographyTests": {
+      "status": "PASS",
+      "tests": 21
+    },
+    "timecodeProof": {
+      "status": "PASS",
+      "frames": 8826
+    },
+    "sourceSyntax": {
+      "status": "PASS",
+      "files": 286
+    }
+  },
+  "closingCuration": {
+    "filesBefore": 62,
+    "filesAfter": 33,
+    "scope": "Active map-to-footage-to-map scene, capture, five preparation scripts, registration data and screenshot.",
+    "removed": "Unused diagnostic scripts, alternate typography insert, inactive reconstruction adapters, live-account collection, duplicate package files and tests requiring excluded fixtures.",
+    "originalProductionSources": "Preserved locally; no original footage removed."
+  },
+  "folderCuration": {
+    "removedFiles": 50,
+    "folders": [
+      {
+        "folder": "opening",
+        "filesBefore": 7,
+        "filesAfter": 7,
+        "rootEntriesBefore": 7,
+        "rootEntriesAfter": 7
+      },
+      {
+        "folder": "rewind",
+        "filesBefore": 52,
+        "filesAfter": 48,
+        "rootEntriesBefore": 38,
+        "rootEntriesAfter": 9
+      },
+      {
+        "folder": "personal",
+        "filesBefore": 90,
+        "filesAfter": 84,
+        "rootEntriesBefore": 90,
+        "rootEntriesAfter": 8
+      },
+      {
+        "folder": "community",
+        "filesBefore": 21,
+        "filesAfter": 20,
+        "rootEntriesBefore": 21,
+        "rootEntriesAfter": 20
+      },
+      {
+        "folder": "timecode",
+        "filesBefore": 15,
+        "filesAfter": 11,
+        "rootEntriesBefore": 15,
+        "rootEntriesAfter": 11
+      },
+      {
+        "folder": "slides",
+        "filesBefore": 307,
+        "filesAfter": 272,
+        "rootEntriesBefore": 50,
+        "rootEntriesAfter": 48
+      }
+    ],
+    "scope": "One active copy of each demo, current film entry points, shared scene models, input preparation and meaningful tests.",
+    "preserved": "Current screenshots, required media inputs, frozen timing data, vendored runtime source and licenses, original production sources.",
+    "productionMediaDeleted": false
+  },
+  "archiveCoverage": {
+    "latestCuratedSource": "Archived; 483 source-manifest files verified with SHA-256 against the clean GitHub-synchronized checkout before cleanup.",
+    "selectedScreenshots": "Archived in the seven film/presentation folders.",
+    "finishedMovies": "Hosted on YouTube; not uploaded to Git. YouTube metadata was read back; full playback was not tested.",
+    "privateInputs": "Excluded from Git. Owner authorized disposal of remaining local media, private configuration and editor records at closeout, including copies without another verified backup. External originals listed in RECOVERY.md are outside cleanup scope.",
+    "unusedPrototypeHistory": "Excluded from Git; unused downloaded packages and duplicate source snapshot removed locally.",
+    "completeOfflineReproduction": false
+  },
+  "finalPublication": {
+    "date": "2026-09-27",
+    "license": "MIT for original code and documentation; see THIRD_PARTY.md",
+    "privacy": "Removed precise visit data, source camera filenames and capture metadata from public source. Inputs remain ignored.",
+    "cleanDependencyInstall": "PASS: npm ci --legacy-peer-deps; added missing @deck.gl/widgets@9.4.0 required by @deck.gl/react",
+    "rendererTests": {
+      "status": "PASS",
+      "tests": 208
+    },
+    "slideTests": {
+      "status": "PASS",
+      "tests": 34
+    },
+    "slidesBuild": "PASS",
+    "closingBuild": "PASS",
+    "timecodeStateChecks": {
+      "status": "PASS",
+      "frames": 8826
+    },
+    "visitRegenerationAndSourceAudit": "PASS: 32 places, 50 visit windows regenerated from the verified private supplier",
+    "photosExporterTypecheck": "PASS: Swift typecheck only; no Photos export run",
+    "providerAttribution": "Added selected-tile data credits to closing renderer and provider/media notices; new GPU capture and original screenshot viewport-specific credits remain unverified",
+    "freshGpuRender": "UNVERIFIED",
+    "inputRecovery": "See RECOVERY.md for verified external original sources. Remaining local private inputs and editor records were explicitly released for disposal at closeout."
+  },
+  "localRetirement": {
+    "date": "2026-09-27",
+    "authorization": "Owner explicitly requested removal of all remaining local project files, including unrelated final export and private records.",
+    "scope": "Entire local Summit directory contents; published GitHub archive and external supplier originals are preserved.",
+    "retention": "Published source and screenshots only; no promise of a complete private editor-session backup."
+  }
+}

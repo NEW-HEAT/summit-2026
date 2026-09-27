@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-19",
+  "number": 19,
+  "title": "Oasis",
+  "kind": "media",
+  "notes": "Tomorrow’s View\nnewheat.co/oasis\nOasis is for dreaming.\nAI automation\n\n4 years ago I wanted to share where and when I worked out over a year.\nvis.gl was my delivery method\nNow - I have the opportunity to share how much I accomplished in 4 years.\nvis.gl accomplishes that vision",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "19-oasis",
+    "label": "Oasis · Live campus",
+    "media": null,
+    "embed": "http://127.0.0.1:8085/oasis"
+  },
+  "overlays": [
+    {
+      "id": "oasis-title",
+      "text": "Oasis is for dreaming",
+      "x": 48,
+      "y": 528,
+      "width": 750,
+      "size": 30,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    },
+    {
+      "id": "oasis-detail",
+      "text": "Tomorrow’s view · AI automation",
+      "x": 48,
+      "y": 572,
+      "width": 750,
+      "size": 23,
+      "font": "Roboto",
+      "color": "#F2ECE2",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Oasis is for dreaming · tomorrow’s view",
+      "Explore the live campus",
+      "AI automation",
+      "Four years ago: share where and when I worked out",
+      "Now: share what I accomplished in four years",
+      "vis.gl carries that vision"
+    ]
+  }
+}

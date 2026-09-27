@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-12-2",
+  "number": 12,
+  "title": "Lift Me from the Ground",
+  "kind": "media",
+  "notes": "See this marketing video I made a year and a half ago with hubble.gl.\n\nOriginal Apple Note attachment: Final.mov, immediately below the Lift Me from the Ground cue. Full attachment plays from its first frame; 32.7 seconds. Continue to Promoting GlobeViews (13).\nUse the video’s Play control to start with audio. No speech after the separate closing film (24).",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "12-agintel-film",
+    "label": "Lift Me from the Ground · agintel",
+    "media": "assets/agintel-note-film-2026-09-10.mp4",
+    "fit": "contain",
+    "playback": "manual"
+  },
+  "overlays": [],
+  "part": 2,
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Marketing film made with hubble.gl",
+      "Press Play with audio · 32.7 seconds",
+      "After the clip: GlobeView contributions"
+    ]
+  }
+}

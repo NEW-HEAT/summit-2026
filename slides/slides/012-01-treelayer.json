@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-12-1",
+  "number": 12,
+  "part": 1,
+  "title": "TreeLayer / Wild Forest",
+  "kind": "media",
+  "notes": "Remembering deck.gl, I quickly pivoted and have since been using it as the primary mapping system, stacking a new TreeLayer on top.\n        See this marketing video I made a year and a half ago with hubble.gl:\n\nLive TreeLayer example: choose a tree and local season, drag, or zoom. Next goes to the existing 12.2 video. The TreeLayer server runs on port 8084.",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 1,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "media": null,
+    "label": "Wild Forest — native TreeLayer live demo",
+    "embed": "http://127.0.0.1:8084/",
+    "flow": "trees",
+    "projectLink": {
+      "url": "https://github.com/visgl/deck.gl-community",
+      "label": "deck.gl-community / TreeLayer"
+    }
+  },
+  "overlays": [],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Remembered deck.gl and pivoted",
+      "Built TreeLayer on top",
+      "Show a grove; change species and season",
+      "Then the hubble.gl marketing film"
+    ]
+  }
+}

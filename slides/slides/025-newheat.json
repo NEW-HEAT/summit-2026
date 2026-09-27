@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-25",
+  "number": 25,
+  "title": "NEWHEAT",
+  "kind": "flame",
+  "notes": "Hold the living NEWHEAT flame indefinitely. All speaking finished before the film. Optional black remains available as slide 26.",
+  "duration": null,
+  "background": "#000000",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": null,
+    "label": "",
+    "media": null
+  },
+  "overlays": [],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Hold the living flame",
+      "No more speaking",
+      "Optional black: slide 26"
+    ]
+  }
+}

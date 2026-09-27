@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-06",
+  "number": 6,
+  "title": "Project Heatmap",
+  "kind": "media",
+  "notes": "4 years ago I wanted to share how much I worked out in one year. \n        and my first personal engineering project was built on top of deck.gl TripsLayer\n        before I share, let me ask:\nProject Heatmap — Jan 2023.\nContinue to Hotrod (05).",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 640,
+      "y": 0,
+      "width": 568,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "06-heatmap",
+    "label": "Project Heatmap video",
+    "media": "assets/project-heatmap.mp4",
+    "fit": "contain"
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "Project\nHeatmap",
+      "x": 72,
+      "y": 266,
+      "width": 520,
+      "size": 72,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    },
+    {
+      "id": "date",
+      "text": "Jan 2023",
+      "x": 76,
+      "y": 445,
+      "width": 490,
+      "size": 32,
+      "font": "Roboto",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Jan 2023 · Project Heatmap",
+      "One year of workouts, brought to life with TripsLayer",
+      "Then introduce Hotrod"
+    ]
+  }
+}

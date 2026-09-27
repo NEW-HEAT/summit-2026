@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-11",
+  "number": 11,
+  "title": "Leaflet.glify / Catchall PR",
+  "kind": "media",
+  "notes": "",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "media": "assets/glify-catchall-pr.png",
+    "fit": "contain",
+    "label": "Leaflet.glify catchall PR 156 — original supplied screenshot",
+    "flow": "pr",
+    "projectLink": {
+      "url": "https://github.com/robertleeplummerjr/Leaflet.glify/pull/156",
+      "label": "Leaflet.glify / #156"
+    }
+  },
+  "overlays": [
+    {
+      "id": "pre-llm",
+      "text": "pre-LLM",
+      "x": 40,
+      "y": 34,
+      "width": 260,
+      "size": 36,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    },
+    {
+      "id": "diff-additions",
+      "text": "+10,073",
+      "x": 235,
+      "y": 40,
+      "width": 145,
+      "size": 27,
+      "font": "Roboto Black",
+      "color": "#8BDCAB",
+      "align": "left"
+    },
+    {
+      "id": "diff-deletions",
+      "text": "−12,330",
+      "x": 392,
+      "y": 40,
+      "width": 155,
+      "size": 27,
+      "font": "Roboto Black",
+      "color": "#E98D72",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "pre-LLM · +10,073 / −12,330 lines",
+      "Leaflet.glify: GPU rendering, but many issues",
+      "Unmaintained repo; accumulated issues and PRs",
+      "Stacked fixes into one catchall PR",
+      "Owner merged it · first big open-source moment",
+      "More cracks → explore mature renderers"
+    ]
+  }
+}

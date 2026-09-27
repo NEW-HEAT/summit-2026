@@ -1,0 +1,89 @@
+New Heat Summit Show Script
+        4 years ago I wanted to share how much I worked out in one year. 
+        and my first personal engineering project was built on top of deck.gl TripsLayer
+        before I share, let me ask: 
+* Char the crowd (1min)
+       Hands up if you want to see vis.gl continue to shine? (Work) 
+            (shiny globe)
+            *pause*          Hands up if you fall out of touch with your friends online? (Social)
+            (global network with dissapitng connections...)
+            *pause*
+        Hands up if you have more hobbies than free time? (Play)
+           ******         *pause*
+* Project Heatmap
+* HOTROD (1min)
+        My fiancé’s grandpa calls me Hotrod.
+        He has no idea what I do for work, 
+        but given I’m building New Heat, the nickname is fitting
+        Im a University of Florida Grad, a Bilingual Nomad; 
+        a Frugal Builder, and a Terrible Quitter
+* Rich Visualizations (15min)
+    * Origins 
+        * Beat
+        My journey starts in a 2022 databases class, when I went head to head with my professor. 
+        The final project required us to use 400k items to create a usable demonstration of the datas utility. 
+        All datasets used had to be publicly available.
+
+        I didnt like this constraint, I wanted to use MY data. I challenged his rule. He insisted my team would be scored more strictly. 
+        4 weeks, 500k Garmin and 500 Google Calendar samples later - we submit an interactive graph comparing calendar events to my heart rate (****OLD SCREENSHOTS***) - and this was his reaction               
+￼
+        He gave us 100% - top grade in the class. Novel data sourcing and actionable insights stood out from all the stock and spotify history trackers.
+        * VisualPT
+        then, came VisualPT in 2023 - my dad worked for a nationwide phyiscal therapy firm that specialized in balance
+        He was always full of ideas, and a student in CS, I said 'just pay me $10 an hour and i'll engineer your ideas'. He agreed.
+        I built a patient assessment library and I learned all about computer vision.
+        For 3 years, the objective was to prove it was more performant than a $50k machine and get his firm to acquire it. Just Dad and I.
+        We hired friends - they walked away. We tried recruiting, and got involved in a North Korean scheme reported by the Wall Street Journal.
+        After depth accuracy unable to detect patient leaning with the available models of the time + our aquisition firm seeking a strategic partner instead of placing an investment
+        the incentive to run a father-son medical application fizzled and I pivoted to focusing on my geospatial passions. My First big failure.
+    * Main crew agintel.ai (2min)
+        Around the same time I started building VisualPT - I got hired by a startup serving citrus farmers and insurers around the Americas.
+        When I came in - the company was using Leaflet and had a functional tool that customers were using to analyze groves -  10's to 100,000's of trees.         The catch was that the codebase was built in PHP in a few 5000 line files mixing portuguese and english - I was responsible for the rebuild 
+        I quickly realized how much of a bottleneck using Leaflet was above a few thousand items.
+        I found a GPU-driven package called Leaflet.glify and put it to use - but found a ton of issues with it. 
+        When I checked the repo - I found it had been unmaintained for years and had accumulated numerous issues and PRs.          This was my first big open source moment - I stacked as many PRs as I could and linked as many issues to them, and opened a catchall PR.
+        This got the attention of the owner, and merged, but soon after revealed many more cracks in the system that left me exploring more mature renderers.
+        Remembering deck.gl, I quickly pivoted and have since been using it as the primary mapping system, stacking a new TreeLayer on top.
+        See this marketing video I made a year and a half ago with hubble.gl:
+        * Lift Me from the Ground Music Video (1 min) 
+        * ￼
+    * Promoting GlobeViews
+        Since this video - my contributions have gotten consistent - spending most of my time graduating GlobeView. 
+        One of my most recent ideas blends the event manager of deck.gl - mjolnir.js, with the motion tracking core of VisualPT.
+        The human and the hammer - thor.gl
+        * thor.gl (2min)
+            * Why do we create slideshows of geospatial context when we could manipulate the globe directly?
+    * What’s New
+        But my boldest ambition is none of this, its for creators.
+        In todays inescapable interconnectedness, constant - sometimes undesired - tracking and a perpetual pursuit for performance:
+        I have been researching this union within a consumer content management tool that maps all motion and moments.
+        Creators need autonomous assemble a story of a day, week, year or life to make more of their free time.
+        Creators need photorealistic, collaborative play back of their journeys to share with their friends online.
+        Creators should use a GlobeView as a landing interface that continues to allow vis.gl to shine.
+        * newheat.co/go  (2min)
+            * Route Planner/Location Tracker
+            * Adventure -> Video Automation 
+        * newheat.co/world  (2min)
+            * Companion Content Vault/Feed
+    * Tomorrows View
+        * newheat.co/oasis (2min)
+        * AI automation (2 min)
+        4 years ago I wanted to share where and when I worked out over a year. 
+        vis.gl was my delivery method 
+        Now - I have the opportunity to share how much I accomplished in 4 years.
+        vis.gl accomplishes that vision
+* Our Work is Never Over Music Video (4 min)
+* Call to Action (1 min)
+		To share is human nature, but Free Time isn’t Free
+		To share takes time, And time is money
+		We story tell so well, consumption  addiction
+		But obsession mostly harms when victims lack action
+		Experiences cross space, all this expended time
+		Create key lessons in, life on&offline
+		Globe for where, Gallery for what, 
+        New Heat serves truth, users live up
+
+        I 
+* Total (22 min)
+* Audience (8 min)
+

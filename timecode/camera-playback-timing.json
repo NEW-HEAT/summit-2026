@@ -1,0 +1,31 @@
+{
+  "kind": "sanitized-source-camera-playback-timing",
+  "sourceFps": 60,
+  "transitionFrameCount": 1828,
+  "totalFrameCount": 1854,
+  "beatCount": 32,
+  "beatIndexRule": "min(31, floor(frame * 32 / 1828))",
+  "beatStartRule": "round(index * 1828 / 32)",
+  "beatEndRule": "round((index + 1) * 1828 / 32)",
+  "incomingPlaybackStartFraction": 0.32,
+  "incomingPlaybackEndFraction": 0.94,
+  "incomingPlaybackCurve": "quintic smootherstep",
+  "handoffFrame": 1848,
+  "supplierReferences": [
+    {
+      "originalPath": "clip-contract.ts",
+      "sha256": "5b83afd1e4089321cccf6493c8cbe9431222d299eaf59e13a78b323d4c4751f7",
+      "mode": "immutable-supplier-timing-reference"
+    },
+    {
+      "originalPath": "geographic-memory-model.ts",
+      "sha256": "b531d6323931ec700812b8ba49c4ad881bb848847f87ed1e052cdf066b618d00",
+      "mode": "immutable-supplier-timing-reference"
+    },
+    {
+      "originalPath": "scene.ts",
+      "sha256": "1644fca6a2c5e20fbfccf34d58ca139337ceb54f5545f6b9eb3e3527c908fbf6",
+      "mode": "immutable-supplier-timing-reference"
+    }
+  ]
+}

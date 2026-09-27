@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-01",
+  "number": 1,
+  "title": "NEWHEAT",
+  "kind": "cover",
+  "notes": "4 years ago I wanted to share how much I worked out in one year. \n        and my first personal engineering project was built on top of deck.gl TripsLayer\n        before I share, let me ask:",
+  "duration": 12,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": null,
+    "label": "",
+    "media": null
+  },
+  "overlays": [],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Four years ago: share one year of workouts",
+      "First personal project → deck.gl TripsLayer",
+      "Before the demo: three hands-up questions"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>thor.gl — Explore by hand</title>
+    <meta name="description" content="A quiet, interactive world atlas. Drag to explore, or turn on your camera and move the globe with your hands." />
+    <meta name="theme-color" content="#101a21" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="thor.gl" />
+    <meta property="og:title" content="thor.gl — Explore by hand" />
+    <meta property="og:description" content="A world atlas you can move with your hands." />
+    <meta property="og:url" content="https://thor.gl/" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="thor.gl — Explore by hand" />
+    <meta name="twitter:description" content="A world atlas you can move with your hands." />
+
+    <link rel="canonical" href="https://thor.gl/" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden; }
+      #root { width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

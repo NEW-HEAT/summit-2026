@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-12",
+  "number": 12,
+  "title": "vis.gl",
+  "kind": "media",
+  "notes": "Acknowledge the people and work in the vis.gl community.\nContinue from the personal contribution journey into the community’s history.",
+  "duration": 18,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 160,
+      "y": 156,
+      "width": 960,
+      "height": 540
+    }
+  },
+  "scene": {
+    "preset": "placeholder",
+    "slot": "12-community",
+    "label": "Community animation",
+    "media": null
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "vis.gl",
+      "x": 88,
+      "y": 52,
+      "width": 800,
+      "size": 50,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "part": 3,
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Acknowledge the vis.gl community",
+      "From personal contributions to shared work"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+Run: "#ff4500"
+Ride: "#ffa500"
+Hike: "#228b22"
+Drive: "#7c5cff"
+Other: "#FF6B35"

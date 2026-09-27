@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-08-2",
+  "number": 8,
+  "title": "VisualPT / Demo",
+  "kind": "media",
+  "notes": "For 3 years,the objective was to prove it was more performant than a $50k machine and get his firm to acquire it. Just Dad and I.\n        We hired friends - they walked away. We tried recruiting, and got involved in a North Korean scheme reported by the Wall Street Journal.",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "08-visualpt",
+    "label": "VisualPT / Demo",
+    "media": "assets/visualpt-demo-final-2026-09-10.mp4",
+    "fit": "contain",
+    "projectLink": {
+      "url": "https://github.com/VisualPT/visualPT",
+      "label": "VisualPT/visualPT"
+    },
+    "afterMedia": {
+      "frame": {
+        "x": 48,
+        "y": 144,
+        "width": 1184,
+        "height": 550
+      },
+      "scene": {
+        "preset": "empty",
+        "label": "WSJ investigation preview at 18:10",
+        "media": "assets/wsj-infiltrated-preview.png",
+        "projectLink": {
+          "url": "https://github.com/VisualPT/visualPT",
+          "label": "VisualPT/visualPT"
+        },
+        "linkPreview": {
+          "url": "https://www.wsj.com/video/infiltrated-north-korea-secret-us-workforce/A221B1E7-3D49-404A-9132-9C3907CBE661",
+          "crop": {
+            "x": 98.0,
+            "y": 188.0,
+            "width": 1120.0,
+            "height": 520,
+            "imageWidth": 1248,
+            "imageHeight": 1450
+          }
+        }
+      },
+      "overlays": [
+        {
+          "id": "title",
+          "text": "Infiltrated",
+          "x": 48,
+          "y": 32,
+          "width": 700,
+          "size": 50,
+          "font": "Roboto Black",
+          "color": "#DD9F49",
+          "align": "left"
+        },
+        {
+          "id": "subtitle",
+          "text": "North Korea’s Secret U.S. Workforce",
+          "x": 48,
+          "y": 90,
+          "width": 950,
+          "size": 26,
+          "font": "Roboto",
+          "color": "#F2ECE2",
+          "align": "left"
+        }
+      ]
+    }
+  },
+  "overlays": [],
+  "part": 2,
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Three years · just Dad and me",
+      "Goal: outperform a $50k machine; pursue acquisition",
+      "Hired friends; recruiting troubles; North Korean scheme"
+    ]
+  }
+}

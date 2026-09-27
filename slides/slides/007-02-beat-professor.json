@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-07-2",
+  "number": 7,
+  "title": "Beat / Rate My Professor",
+  "kind": "media",
+  "notes": "My journey starts in a 2022 databases class, when I went head to head with my favorite professor. \n        The final project required us to use 400k items to create a usable demonstration of the datas utility. \n        All datasets used had to be publicly available.\n\n        I didnt like this constraint, I wanted to use MY data. I challenged his rule. He insisted my team would be scored more strictly.",
+  "duration": null,
+  "background": "#FFFFFF",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "07-beat",
+    "label": "Supplied Rate My Professors screenshot",
+    "media": "assets/beat-professor-rating.png",
+    "fit": "contain",
+    "projectLink": {
+      "url": "https://github.com/NEW-HEAT/beat",
+      "label": "NEW-HEAT/beat"
+    }
+  },
+  "overlays": [],
+  "part": 2,
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "2022 databases class · 400k-item requirement",
+      "Public datasets only—I wanted to use my own",
+      "Challenged the rule; stricter grading"
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-20",
+  "number": 20,
+  "title": "Splats",
+  "kind": "media",
+  "notes": "Show the selected reconstruction or splat sequence. Explain what it demonstrates and what still needs work.",
+  "duration": 18,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 160,
+      "y": 156,
+      "width": 960,
+      "height": 540
+    }
+  },
+  "scene": {
+    "preset": "placeholder",
+    "slot": "20-splats",
+    "label": "Selected splat sequence",
+    "media": null
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "Splats",
+      "x": 88,
+      "y": 52,
+      "width": 800,
+      "size": 50,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Show the selected splat or reconstruction",
+      "What it demonstrates; what still needs work"
+    ]
+  }
+}

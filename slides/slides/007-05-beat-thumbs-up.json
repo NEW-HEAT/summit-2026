@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-07-5",
+  "number": 7,
+  "title": "Beat / Thumbs up",
+  "kind": "media",
+  "notes": "This was his reaction.\nHe gave us 100% - top grade in the class. Novel data sourcing and actionable insights stood out from all the stock and spotify history trackers.",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 40,
+      "y": 40,
+      "width": 1200,
+      "height": 640
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "07-beat",
+    "label": "Beat / Thumbs up",
+    "media": "assets/beat-thumbs-up.jpg",
+    "fit": "contain",
+    "projectLink": {
+      "url": "https://github.com/NEW-HEAT/beat",
+      "label": "NEW-HEAT/beat"
+    }
+  },
+  "overlays": [],
+  "part": 5,
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "His reaction",
+      "100% · top grade in the class",
+      "Personal data + actionable insights stood out"
+    ]
+  }
+}

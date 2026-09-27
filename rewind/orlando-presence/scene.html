@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>NEW HEAT · Orlando Presence</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body,
+      main,
+      canvas {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+      body {
+        position: fixed;
+        inset: 0;
+      }
+      main,
+      canvas {
+        position: absolute;
+        inset: 0;
+        display: block;
+      }
+      #timestamp-canvas {
+        display: none;
+      }
+      html[data-track="timestamp"] #globe-canvas {
+        display: none;
+      }
+      html[data-track="timestamp"] #timestamp-canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <main aria-label="Orlando globe continuation">
+      <canvas id="globe-canvas"></canvas>
+      <canvas id="timestamp-canvas" width="1920" height="1080"></canvas>
+    </main>
+    <script type="module" src="./scene.ts"></script>
+  </body>
+</html>

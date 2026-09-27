@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-16",
+  "number": 16,
+  "title": "Go",
+  "kind": "media",
+  "notes": "But my boldest ambition is none of this, its for creators.\n        In todays inescapable interconnectedness, constant - sometimes undesired - tracking and a perpetual pursuit for performance:\n        I have been researching this union within a consumer content management tool that maps all motion and moments.\n        Creators need autonomous assemble a story of a day, week, year or life to make more of their free time.\n        Creators need photorealistic, collaborative play back of their journeys to share with their friends online.\n        Creators should use a GlobeView as a landing interface that continues to allow vis.gl to shine.\n\nRoute Planner / Location Tracker\nAdventure → Video Automation\nGo is for planning.",
+  "duration": 18,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 160,
+      "y": 156,
+      "width": 960,
+      "height": 540
+    }
+  },
+  "scene": {
+    "preset": "placeholder",
+    "slot": "16-go",
+    "label": "Go demo",
+    "media": null
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "Go",
+      "x": 88,
+      "y": 52,
+      "width": 800,
+      "size": 50,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    },
+    {
+      "id": "role",
+      "text": "Planning",
+      "x": 860,
+      "y": 68,
+      "width": 334,
+      "size": 30,
+      "font": "Roboto",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "The boldest ambition: build for creators",
+      "Map motion and moments in one content tool",
+      "Assemble a day, a week, a year or a life",
+      "Collaborative journey playback with friends",
+      "GlobeView as the landing interface",
+      "Go is for planning",
+      "Route planner + location tracker",
+      "Adventure → video automation"
+    ]
+  }
+}

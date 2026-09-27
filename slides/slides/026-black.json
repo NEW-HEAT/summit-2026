@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-26",
+  "number": 26,
+  "title": "Black",
+  "kind": "black",
+  "notes": "Operator black after the flame hold.",
+  "duration": null,
+  "background": "#000000",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": null,
+    "label": "",
+    "media": null
+  },
+  "overlays": [],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Operator black after the flame hold"
+    ]
+  }
+}

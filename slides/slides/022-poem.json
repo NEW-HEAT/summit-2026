@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-22",
+  "number": 22,
+  "title": "Our work is never over",
+  "kind": "cue",
+  "notes": "To share is human nature,\nbut Free Time isn’t Free\nTo share takes time,\nAnd time is money\n\nWe story tell so well,\nconsumption addiction\nBut obsession mostly harms\nwhen victims lack action\n\nExperiences cross space,\nall this expended time\nCreate key lessons in,\nlife on&offline\n\nGlobe shows where, Gallery points the view\nUsers focus on living, and New Heat follows you\n\nvis.gl triggers every sense except for odor\nThis shit fires me up, our work is never over.",
+  "duration": null,
+  "background": "#131110",
+  "view": {
+    "type": "OrthographicView",
+    "state": {
+      "target": [
+        640,
+        360,
+        0
+      ],
+      "zoom": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "embers",
+    "label": "Closing poem",
+    "media": null,
+    "textBuild": "replace"
+  },
+  "overlays": [
+    {
+      "id": "stanza-1",
+      "text": "To share is human nature,\nbut Free Time isn’t Free\nTo share takes time,\nAnd time is money",
+      "x": 90,
+      "y": 250,
+      "width": 1100,
+      "size": 46,
+      "font": "Roboto",
+      "color": "#DD9F49",
+      "align": "left",
+      "reveal": 1
+    },
+    {
+      "id": "stanza-2",
+      "text": "We story tell so well,\nconsumption addiction\nBut obsession mostly harms\nwhen victims lack action",
+      "x": 90,
+      "y": 250,
+      "width": 1100,
+      "size": 46,
+      "font": "Roboto",
+      "color": "#F2ECE2",
+      "align": "left",
+      "reveal": 2
+    },
+    {
+      "id": "stanza-3",
+      "text": "Experiences cross space,\nall this expended time\nCreate key lessons in,\nlife on&offline",
+      "x": 90,
+      "y": 250,
+      "width": 1100,
+      "size": 46,
+      "font": "Roboto",
+      "color": "#F2ECE2",
+      "align": "left",
+      "reveal": 3
+    },
+    {
+      "id": "stanza-4",
+      "text": "Globe shows where, Gallery points the view\nUsers focus on living, and New Heat follows you",
+      "x": 90,
+      "y": 305,
+      "width": 1100,
+      "size": 46,
+      "font": "Roboto",
+      "color": "#F2ECE2",
+      "align": "left",
+      "reveal": 4
+    },
+    {
+      "id": "stanza-5",
+      "text": "vis.gl triggers every sense except for odor\nThis shit fires me up, our work is never over.",
+      "x": 90,
+      "y": 305,
+      "width": 1100,
+      "size": 46,
+      "font": "Roboto",
+      "color": "#DD9F49",
+      "align": "left",
+      "reveal": 5
+    }
+  ],
+  "speaker": {
+    "mode": "exact",
+    "points": []
+  }
+}

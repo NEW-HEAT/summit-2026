@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "authority": "Candidate editor only; does not change control/SHOW_MANIFEST.json",
+  "source": "inputs/speech-2026-09-10/apple-note.html",
+  "userOverride": "Finish speaking on the poem’s final line: our work is never over. Then closing film, then indefinite living flame.",
+  "main": [
+    "slide-01",
+    "slide-02",
+    "slide-03",
+    "slide-04",
+    "slide-06",
+    "slide-05",
+    "slide-07-2",
+    "slide-07-3",
+    "slide-07-5",
+    "slide-08",
+    "slide-08-2",
+    "slide-08-3",
+    "slide-10",
+    "slide-11",
+    "slide-12-1",
+    "slide-12-2",
+    "slide-13",
+    "slide-14",
+    "slide-16",
+    "slide-17",
+    "slide-19",
+    "slide-22",
+    "slide-24",
+    "slide-25"
+  ],
+  "optional": [
+    "slide-12",
+    "slide-18",
+    "slide-20",
+    "slide-26"
+  ],
+  "aliases": {
+    "slide-07-2": [
+      "7.1"
+    ],
+    "slide-10": [
+      "9"
+    ],
+    "slide-07-5": [
+      "7.4"
+    ],
+    "slide-22": [
+      "23",
+      "21"
+    ],
+    "slide-08-2": [
+      "14.1"
+    ],
+    "slide-16": [
+      "15"
+    ]
+  },
+  "sourceLinks": {
+    "slide-02": [
+      {
+        "label": "vis.gl",
+        "url": "http://vis.gl"
+      }
+    ],
+    "slide-13": [
+      {
+        "label": "vis.gl",
+        "url": "http://vis.gl"
+      }
+    ],
+    "slide-12": [
+      {
+        "label": "vis.gl",
+        "url": "http://vis.gl"
+      }
+    ],
+    "slide-06": [
+      {
+        "label": "Project Heatmap",
+        "url": "https://www.instagram.com/p/CnA6tSjoNPj/"
+      }
+    ],
+    "slide-07-2": [
+      {
+        "label": "Beat",
+        "url": "https://github.com/NEW-HEAT/beat"
+      }
+    ],
+    "slide-07-3": [
+      {
+        "label": "Beat",
+        "url": "https://github.com/NEW-HEAT/beat"
+      }
+    ],
+    "slide-08-2": [
+      {
+        "label": "North Korean scheme reported by the Wall Street Journal",
+        "url": "https://www.wsj.com/video/infiltrated-north-korea-secret-us-workforce/A221B1E7-3D49-404A-9132-9C3907CBE661"
+      },
+      {
+        "label": "VisualPT repository",
+        "url": "https://github.com/VisualPT/visualPT"
+      }
+    ],
+    "slide-12-2": [
+      {
+        "label": "agintel.ai",
+        "url": "http://agintel.ai"
+      }
+    ],
+    "slide-11": [
+      {
+        "label": "my first big open source moment",
+        "url": "https://github.com/robertleeplummerjr/Leaflet.glify/pull/156"
+      }
+    ],
+    "slide-14": [
+      {
+        "label": "thor.gl",
+        "url": "http://thor.gl"
+      }
+    ],
+    "slide-16": [
+      {
+        "label": "newheat.co/go",
+        "url": "http://newheat.co/go"
+      }
+    ],
+    "slide-17": [
+      {
+        "label": "newheat.co/world",
+        "url": "http://newheat.co/world"
+      }
+    ],
+    "slide-19": [
+      {
+        "label": "newheat.co/oasis",
+        "url": "http://newheat.co/oasis"
+      }
+    ],
+    "slide-07-5": [
+      {
+        "label": "Beat",
+        "url": "https://github.com/NEW-HEAT/beat"
+      }
+    ],
+    "slide-10": [
+      {
+        "label": "agintel.ai",
+        "url": "http://agintel.ai"
+      },
+      {
+        "label": "RFC: three versions",
+        "url": "https://github.com/visgl/deck.gl/issues/9942"
+      }
+    ],
+    "slide-12-1": [
+      {
+        "label": "Wild Forest live dev server",
+        "url": "http://127.0.0.1:8084/"
+      }
+    ],
+    "slide-08": [
+      {
+        "label": "VisualPT repository",
+        "url": "https://github.com/VisualPT/visualPT"
+      }
+    ],
+    "slide-08-3": [
+      {
+        "label": "VisualPT repository",
+        "url": "https://github.com/VisualPT/visualPT"
+      }
+    ]
+  }
+}

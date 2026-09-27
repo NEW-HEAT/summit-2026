@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-18",
+  "number": 18,
+  "title": "Export",
+  "kind": "media",
+  "notes": "Export is for rendering.\nGive the recorded experience a shareable output.",
+  "duration": 18,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 160,
+      "y": 156,
+      "width": 960,
+      "height": 540
+    }
+  },
+  "scene": {
+    "preset": "placeholder",
+    "slot": "18-export",
+    "label": "Export demo",
+    "media": null
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "Export",
+      "x": 88,
+      "y": 52,
+      "width": 800,
+      "size": 50,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    },
+    {
+      "id": "role",
+      "text": "Rendering",
+      "x": 860,
+      "y": 68,
+      "width": 334,
+      "size": 30,
+      "font": "Roboto",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Export is for rendering",
+      "Turn recorded experiences into shareable output"
+    ]
+  }
+}

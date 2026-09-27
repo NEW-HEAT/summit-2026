@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-17",
+  "number": 17,
+  "title": "World",
+  "kind": "media",
+  "notes": "Companion Content Vault / Feed\nWorld is for viewing.",
+  "duration": 40,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "17-world",
+    "label": "World · Follow / FlyTo",
+    "media": "assets/NEWHEAT-World-Follow-FlyTo.mp4",
+    "fit": "contain"
+  },
+  "overlays": [],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "World is for viewing",
+      "Companion content vault + feed"
+    ]
+  }
+}

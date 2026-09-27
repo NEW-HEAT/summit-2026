@@ -1,0 +1,2719 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NEW HEAT Authorship</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #deck-surface,
+      #stage {
+        position: fixed;
+        inset: 0;
+      }
+
+      #deck-surface {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #stage {
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="deck-surface"></canvas>
+    <canvas id="stage"></canvas>
+    <script>
+      (() => {
+        'use strict';
+
+        const DURATION_SECONDS = 9.8;
+        const TIMING = Object.freeze({
+          flameHoldEnd: 0,
+          mapRevealEnd: 4,
+          openingRoutesStart: 0,
+          openingRoutesResolve: 3.1,
+          apertureMaskStart: 7.15,
+          apertureMaskEnd: 8.05,
+          pixelationStart: 8.05,
+          paletteBlendStart: 8.65,
+          referenceSpotFadeStart: 8.85,
+          referenceSpotFadeEnd: 9.72,
+          pixelationEnd: 9.42,
+          pointTransitionStart: 9.25,
+          pointTransitionEnd: 9.8,
+          finalPolishStart: 9.58,
+          finalPolishEnd: 9.8
+        });
+        const LOW_RESOLUTION = Object.freeze({width: 10, height: 5});
+        const FINAL_POINT_RADIUS_SCALE = 0.98;
+        const OPENING_FLOW_PULSE_COUNT = 5;
+        const OPENING_FLOW_TRAIL_SECONDS = Object.freeze({initial: 0.16, resolved: 0.06});
+        const TAU = Math.PI * 2;
+        const CYCLADES_BASEMAP_BOUNDS = Object.freeze([22.8, 35.8, 27.5, 38.7]);
+        const CYCLADES_LATITUDE_PER_SECOND = (37.74 - 36.72) / 9.25;
+        const CYCLADES_CAMERA = Object.freeze({
+          longitude: 25.08,
+          latitudeStart: 36.72,
+          latitudeEnd: 36.72 + CYCLADES_LATITUDE_PER_SECOND * DURATION_SECONDS,
+          zoom: 8.45,
+          pitch: 0,
+          bearing: 0
+        });
+        const deckCanvas = document.querySelector('#deck-surface');
+        const canvas = document.querySelector('#stage');
+        const context = canvas.getContext('2d', {
+          alpha: false,
+          colorSpace: 'srgb'
+        });
+        const burstCanvas = document.createElement('canvas');
+        const burstContext = burstCanvas.getContext('2d', {
+          alpha: true,
+          colorSpace: 'srgb'
+        });
+        const transitionRouteOverlayCanvas = document.createElement('canvas');
+        const transitionRouteOverlayContext = transitionRouteOverlayCanvas.getContext('2d', {
+          alpha: true,
+          colorSpace: 'srgb'
+        });
+        const sceneCanvas = document.createElement('canvas');
+        const sceneContext = sceneCanvas.getContext('2d', {
+          alpha: false,
+          colorSpace: 'srgb'
+        });
+        const transitionCanvas = document.createElement('canvas');
+        const transitionContext = transitionCanvas.getContext('2d', {
+          alpha: true,
+          colorSpace: 'srgb'
+        });
+        const transitionMaskCanvas = document.createElement('canvas');
+        const transitionMaskContext = transitionMaskCanvas.getContext('2d', {
+          alpha: true,
+          colorSpace: 'srgb'
+        });
+        const pixelCanvas = document.createElement('canvas');
+        const pixelContext = pixelCanvas.getContext('2d', {
+          alpha: false,
+          colorSpace: 'srgb'
+        });
+        const lowResolutionCanvas = document.createElement('canvas');
+        const lowResolutionContext = lowResolutionCanvas.getContext('2d', {
+          alpha: false,
+          colorSpace: 'srgb'
+        });
+        const waterFieldCanvas = document.createElement('canvas');
+        const waterFieldContext = waterFieldCanvas.getContext('2d', {
+          alpha: true,
+          colorSpace: 'srgb'
+        });
+        const imageCache = new Map();
+        const pulseRouteCache = new Map();
+        const assets = {
+          worldUrl: null,
+          flameUrl: null,
+          world: null,
+          waterField: null,
+          deckInitialized: false
+        };
+        const seedUnit = (a, b, c = 0) => {
+          const value = Math.sin(a * 91.17 + b * 37.41 + c * 17.73) * 43758.5453;
+          return value - Math.floor(value);
+        };
+
+        const CYCLADES_PORTS = Object.freeze({
+          santorini: [25.43, 36.393],
+          anafi: [25.769, 36.351],
+          folegandros: [24.919, 36.628],
+          ios: [25.285, 36.722],
+          milos: [24.427, 36.725],
+          amorgos: [25.852, 36.831],
+          sifnos: [24.675, 36.975],
+          paros: [25.152, 37.085],
+          naxos: [25.376, 37.105],
+          serifos: [24.505, 37.142],
+          kythnos: [24.431, 37.382],
+          syros: [24.942, 37.441],
+          mykonos: [25.328, 37.446],
+          tinos: [25.158, 37.539],
+          kea: [24.324, 37.612],
+          ikaria: [26.176, 37.612],
+          andros: [24.938, 37.842]
+        });
+
+        const OPENING_CORRIDORS = Object.freeze([
+          ['santorini', 'ios', 'naxos', 'mykonos', 'andros'],
+          ['milos', 'sifnos', 'paros', 'mykonos', 'tinos'],
+          ['anafi', 'santorini', 'ios', 'paros', 'mykonos'],
+          ['amorgos', 'naxos', 'paros', 'syros', 'tinos'],
+          ['serifos', 'syros', 'mykonos', 'ikaria'],
+          ['kythnos', 'syros', 'tinos', 'andros'],
+          ['folegandros', 'ios', 'naxos', 'mykonos']
+        ]);
+        const CYCLE_CORRIDORS = Object.freeze([
+          OPENING_CORRIDORS,
+          [
+            ['kea', 'syros', 'mykonos', 'ikaria'],
+            ['milos', 'sifnos', 'paros', 'naxos', 'amorgos'],
+            ['kythnos', 'serifos', 'syros', 'mykonos'],
+            ['santorini', 'anafi', 'amorgos'],
+            ['folegandros', 'ios', 'naxos'],
+            ['serifos', 'paros', 'naxos'],
+            ['andros', 'tinos', 'mykonos', 'ikaria']
+          ],
+          [
+            ['kea', 'kythnos', 'syros', 'mykonos', 'ikaria'],
+            ['milos', 'folegandros', 'ios', 'amorgos'],
+            ['serifos', 'sifnos', 'paros', 'naxos'],
+            ['kythnos', 'syros', 'tinos', 'andros'],
+            ['milos', 'santorini', 'anafi'],
+            ['kea', 'syros', 'mykonos', 'naxos', 'amorgos'],
+            ['andros', 'mykonos', 'naxos', 'amorgos']
+          ],
+          OPENING_CORRIDORS.map((corridor) => [...corridor].reverse())
+        ]);
+        const CYCLE_COMPANION_CORRIDORS = Object.freeze([
+          [
+            ['kea', 'kythnos', 'serifos', 'milos'],
+            ['santorini', 'anafi', 'amorgos', 'ikaria']
+          ],
+          [
+            ['andros', 'tinos', 'syros', 'kea'],
+            ['milos', 'folegandros', 'ios', 'santorini']
+          ],
+          [
+            ['serifos', 'sifnos', 'paros', 'naxos'],
+            ['ikaria', 'mykonos', 'syros', 'kythnos']
+          ],
+          [
+            ['anafi', 'santorini', 'ios', 'folegandros', 'milos'],
+            ['kea', 'syros', 'tinos', 'andros']
+          ],
+          [
+            ['amorgos', 'naxos', 'paros', 'sifnos', 'milos'],
+            ['ikaria', 'mykonos', 'tinos', 'andros']
+          ],
+          [
+            ['milos', 'santorini', 'anafi'],
+            ['serifos', 'paros', 'mykonos', 'ikaria']
+          ],
+          [
+            ['kea', 'kythnos', 'syros', 'tinos'],
+            ['santorini', 'ios', 'naxos', 'amorgos']
+          ]
+        ]);
+        const TRANSITION_CORRIDORS = Object.freeze([
+          ['andros', 'tinos', 'syros', 'kea'],
+          ['andros', 'mykonos', 'naxos', 'amorgos'],
+          ['andros', 'tinos', 'mykonos', 'paros', 'sifnos'],
+          ['andros', 'tinos', 'syros', 'kythnos', 'kea'],
+          ['andros', 'mykonos', 'naxos', 'amorgos'],
+          ['andros', 'tinos', 'mykonos', 'paros', 'serifos'],
+          ['andros', 'mykonos', 'naxos', 'amorgos']
+        ]);
+        const OPENING_ROUTE_SPECS = Object.freeze(OPENING_CORRIDORS.map((corridor, index) => ({
+          index,
+          kind: 'bottom-origin-flame-route',
+          corridorNames: corridor,
+          startTime: 0,
+          resolveTime: TIMING.openingRoutesResolve,
+          fadeStart: 2.55 + index * 0.04,
+          fadeEnd: 3 + index * 0.025,
+          seed: 0.13 + index * 0.137
+        })));
+
+        const SINGLE_TRIP_BURST_SPECS = Object.freeze([]);
+        const TRANSITION_BURST_ROUTE_SPECS = Object.freeze([]);
+        const TRIP_ROUTE_SPECS = SINGLE_TRIP_BURST_SPECS;
+
+        // Final frame: a close but fully contained 5x10 wall matching the
+        // saturated cyan-blue-green distribution of the supplied checkpoint.
+        const FINAL_POINT_PATTERN = Object.freeze([
+          'OOOOOOOOOO',
+          'OOOOOOOOOO',
+          'OOOOOOOOOO',
+          'OOOOOOOOOO',
+          'OOOOOOOOOO'
+        ]);
+        const REFERENCE_GRID_ROWS = Object.freeze([
+          {xStart: 0.05, xEnd: 0.95, y: 0.15, radius: 0.062},
+          {xStart: 0.05, xEnd: 0.95, y: 0.325, radius: 0.062},
+          {xStart: 0.05, xEnd: 0.95, y: 0.5, radius: 0.062},
+          {xStart: 0.05, xEnd: 0.95, y: 0.675, radius: 0.062},
+          {xStart: 0.05, xEnd: 0.95, y: 0.85, radius: 0.062}
+        ]);
+        const ROUTE_SPECS = Object.freeze([
+          ...OPENING_ROUTE_SPECS,
+          ...TRIP_ROUTE_SPECS
+        ]);
+        const CYCLE_TRIP_PATH_COUNT = TRIP_ROUTE_SPECS.reduce(
+          (count, spec) => count + 1 + spec.companionCorridorNames.length,
+          0
+        );
+        const TRIP_ROUTE_THEMES = Object.freeze([
+          {middle: '#f36a1d', outer: '#a9220f', highlight: '#ffd071'},
+          {middle: '#0b62c9', outer: '#041f55', highlight: '#47c8ff'},
+          {middle: '#0088a8', outer: '#003b54', highlight: '#58d9f4'},
+          {middle: '#d83b1b', outer: '#82180e', highlight: '#ff9a43'},
+          {middle: '#0f8e70', outer: '#003f39', highlight: '#6dd5aa'},
+          {middle: '#116ca7', outer: '#053455', highlight: '#63cce6'},
+          {middle: '#0b6f77', outer: '#00323d', highlight: '#5bc8bf'}
+        ]);
+        // Exact CUT checkpoint samples from the original multi-canvas-globes
+        // source. This is the cool pastel frame visible at both ends of the
+        // deck-globe-spheres-5s smaller-points export.
+        const REFERENCE_CUT_COLOR_FRAME = Object.freeze([
+          '#578cfd', '#4e93fd', '#69a0fe', '#83d4fe', '#98b6fe',
+          '#90c1fe', '#a2b1fd', '#8ab3fd', '#6ea4fe', '#68a6fe',
+          '#726dfd', '#6b71fe', '#857aff', '#bbbefe', '#93a7ff',
+          '#c48efe', '#8d7dfc', '#a980fe', '#9d85fd', '#7a72fd',
+          '#6d5be4', '#7751df', '#7f6bfa', '#5d3990', '#e7b0ff',
+          '#d18efe', '#ac7bfd', '#7d62fd', '#9162ce', '#7853fb'
+        ]);
+        // Three local color samples per sphere, taken directly from the final
+        // decoded frame of deck-globe-spheres-5s-60fps-smaller-points-final.mp4.
+        // This locks the finish to the old export's actual distribution instead
+        // of merely reusing one of its source palettes.
+        const REFERENCE_EXPORTED_ORB_THEMES = Object.freeze([
+          ['#e2ceea', '#dcceed', '#d5d0f1'], ['#c9d6ff', '#c5d3fe', '#b5c7fe'], ['#efc3d7', '#e0cae7', '#cbcdf4'], ['#c9d1ec', '#e1d0db', '#e5c9ce'], ['#d4f0f5', '#c3ebef', '#b3e4ef'], ['#aad9f3', '#b8e6ee', '#c7ecf3'], ['#c2e0f4', '#c9e4f7', '#c8e3f6'], ['#b6e4fe', '#c5e5fe', '#cae6ff'], ['#bae3fe', '#add6fe', '#a4cbfe'], ['#e9c4ce', '#e3d4df', '#e3dae3'],
+          ['#d8dfd7', '#dcd8d4', '#ddd0cf'], ['#b7d3ff', '#b6d2fe', '#b4d2ff'], ['#dcdbe0', '#dcdfe5', '#cde1ed'], ['#d2d2e1', '#d3d8e6', '#e4cfdb'], ['#ded3e6', '#cfd0e9', '#c6d3ee'], ['#bedcfe', '#bedbfe', '#b1d5fe'], ['#acdffe', '#c4ebfe', '#c9eefe'], ['#c1e2ff', '#c3e1fe', '#bfdffe'], ['#c4dbff', '#bdd9fe', '#c5dffe'], ['#e3dbed', '#e1c7db', '#e2b8ce'],
+          ['#e0e0e9', '#e0d2d9', '#ecbbb7'], ['#d4e7fb', '#c6e2f3', '#b5e2de'], ['#cee9f8', '#c2e9ed', '#b2edd9'], ['#c2f3d4', '#c6f2d9', '#c1f2d5'], ['#b7f0e8', '#c3f5f2', '#d0f9f8'], ['#d0f8fe', '#b3f5ff', '#9cf3fe'], ['#bff0fe', '#c4f4fe', '#c4f6ff'], ['#bff3f4', '#b5f3ec', '#b9f2f1'], ['#b1e4f1', '#b5e5f5', '#c0eef1'], ['#dcdbeb', '#d6d4e6', '#ddc8d4'],
+          ['#fcd1cf', '#fcc7c7', '#fdabb0'], ['#f6bbc0', '#f9c2c2', '#f8bdbc'], ['#badcf3', '#c1e1f3', '#c9e5f4'], ['#c8def2', '#d1d9ec', '#e2d9e9'], ['#bde1fe', '#b9dcfe', '#bad7fe'], ['#a6cefe', '#b0d6fe', '#c3defe'], ['#badcfe', '#b7dbfe', '#b3dbfe'], ['#acddfe', '#b4e1fe', '#bde5fe'], ['#c2daff', '#c0d8fe', '#b0cdff'], ['#c2d6fe', '#b9d1ff', '#aec8ff'],
+          ['#d7eff9', '#cbecf0', '#adebd0'], ['#c8def6', '#c0deed', '#c8e6e7'], ['#dce5ed', '#d9dde6', '#e1d5db'], ['#cdebf2', '#d2e8ef', '#dfd8e0'], ['#b0dffe', '#c8e5ff', '#c7dfff'], ['#aef2e7', '#b8f2ed', '#bdf1f6'], ['#b7e4fe', '#bae4fe', '#caeafe'], ['#d6e1f1', '#ddd6e1', '#e4c2c6'], ['#e9d7dc', '#e3d5dc', '#e2c7cc'], ['#bfe9ef', '#cceef3', '#cbedf4']
+        ]);
+        const DAFT_REFERENCE_ORB_BASE_COLORS = Object.freeze([
+          '#0a5cff', '#047eff', '#009fe8', '#23d7ff', '#2ca8ff',
+          '#00d7d8', '#00c89a', '#23bbff', '#0b86f1', '#0c74f2',
+          '#0786ff', '#00b1f4', '#00c8f4', '#28e2ff', '#00d8c7',
+          '#22bffe', '#00d4ca', '#00d65d', '#04a8ff', '#0388f4',
+          '#00c983', '#00df62', '#00d744', '#00bb6e', '#00dfbe',
+          '#1edcf4', '#1cceff', '#04d486', '#04d95f', '#00aebb',
+          '#00d977', '#05de5f', '#00d348', '#04ce68', '#00c99e',
+          '#00bfff', '#009cff', '#02a9ef', '#007ef0', '#006bea',
+          '#03d274', '#00ce70', '#00bf91', '#00d0a8', '#00a9e6',
+          '#00b5f0', '#009af5', '#00a8e5', '#0088f5', '#0072ed'
+        ]);
+        // Visible wall accents sampled from the supplied Daft Punk handoff.
+        // The title and performers in that frame are not part of this render.
+        const DAFT_REFERENCE_SPOT_OVERRIDES = Object.freeze({
+          // Top row: dark red across the width, except the two pale center points.
+          0: {color: '#3b0006', lightness: 0.1},
+          1: {color: '#570006', lightness: 0.14},
+          2: {color: '#680106', lightness: 0.16},
+          3: {color: '#810306', lightness: 0.2},
+          4: {color: '#7772c8', lightness: 0.54},
+          5: {color: '#cec9ed', lightness: 0.72},
+          6: {color: '#810306', lightness: 0.2},
+          7: {color: '#680106', lightness: 0.16},
+          8: {color: '#570006', lightness: 0.14},
+          9: {color: '#3b0006', lightness: 0.1},
+          // Remaining rows: both dead-center columns continue in dark red.
+          14: {color: '#a10a13', lightness: 0.31},
+          15: {color: '#aa0c14', lightness: 0.33},
+          24: {color: '#b10d16', lightness: 0.36},
+          25: {color: '#aa0b14', lightness: 0.34},
+          34: {color: '#ad0c15', lightness: 0.35},
+          35: {color: '#b80f18', lightness: 0.37},
+          44: {color: '#530005', lightness: 0.14},
+          45: {color: '#5a0006', lightness: 0.15}
+        });
+
+        const clamp = (value, low = 0, high = 1) =>
+          Math.min(high, Math.max(low, value));
+        const mix = (a, b, amount) => a + (b - a) * amount;
+        const fract = (value) => value - Math.floor(value);
+        const smoothstep = (edge0, edge1, value) => {
+          const t = clamp((value - edge0) / (edge1 - edge0));
+          return t * t * (3 - 2 * t);
+        };
+        const easeInCubic = (value) => value * value * value;
+        const easeOutQuint = (value) => 1 - (1 - value) ** 5;
+        const easeInOutSine = (value) => -(Math.cos(Math.PI * value) - 1) / 2;
+        const easeInOutCubic = (value) =>
+          value < 0.5 ? 4 * value ** 3 : 1 - ((-2 * value + 2) ** 3) / 2;
+
+        function hexToRgb(hex) {
+          return {
+            r: Number.parseInt(hex.slice(1, 3), 16),
+            g: Number.parseInt(hex.slice(3, 5), 16),
+            b: Number.parseInt(hex.slice(5, 7), 16)
+          };
+        }
+
+        function colorWithAlpha(hex, alpha) {
+          const {r, g, b} = hexToRgb(hex);
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function mixHex(from, to, amount) {
+          const a = hexToRgb(from);
+          const b = hexToRgb(to);
+          const channel = (start, end) =>
+            Math.round(mix(start, end, clamp(amount))).toString(16).padStart(2, '0');
+          return `#${channel(a.r, b.r)}${channel(a.g, b.g)}${channel(a.b, b.b)}`;
+        }
+
+        function tripRouteTheme(routeIndex, variant = 0) {
+          return TRIP_ROUTE_THEMES[
+            (routeIndex * 3 + variant * 2) % TRIP_ROUTE_THEMES.length
+          ];
+        }
+
+        function tripRouteRgb(routeIndex, variant, timeSeconds, opening = false) {
+          const theme = tripRouteTheme(routeIndex, variant);
+          const warm = (routeIndex + variant) % 2 === 0 ? '#ff761b' : '#ed2f16';
+          const coolIn = opening ? smoothstep(1.35, 3.55, timeSeconds) : 1;
+          const color = hexToRgb(mixHex(warm, theme.middle, coolIn));
+          return [color.r, color.g, color.b];
+        }
+
+        function referenceSampleIndex(pointIndex) {
+          const row = Math.floor(pointIndex / 10);
+          const column = pointIndex % 10;
+          if (row < 3) return pointIndex;
+          const sourceRow = row - 2;
+          const shiftedColumn = (column + row * 3) % 10;
+          return sourceRow * 10 + shiftedColumn;
+        }
+
+        function blendHexColors(colors, weights) {
+          const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+          const channels = colors.reduce((totals, color, index) => {
+            const rgb = hexToRgb(color);
+            const weight = weights[index] / totalWeight;
+            totals.r += rgb.r * weight;
+            totals.g += rgb.g * weight;
+            totals.b += rgb.b * weight;
+            return totals;
+          }, {r: 0, g: 0, b: 0});
+          return `#${[channels.r, channels.g, channels.b]
+            .map((channel) => Math.round(channel).toString(16).padStart(2, '0'))
+            .join('')}`;
+        }
+
+        function setColorLightness(hex, targetLightness, chromaScale = 1) {
+          const source = hexToRgb(hex);
+          const channels = [source.r, source.g, source.b].map((channel) => channel / 255);
+          const maximum = Math.max(...channels);
+          const minimum = Math.min(...channels);
+          const range = maximum - minimum;
+          let hue = 0;
+          if (range > 0) {
+            if (maximum === channels[0]) hue = ((channels[1] - channels[2]) / range) % 6;
+            else if (maximum === channels[1]) hue = (channels[2] - channels[0]) / range + 2;
+            else hue = (channels[0] - channels[1]) / range + 4;
+            hue /= 6;
+            if (hue < 0) hue += 1;
+          }
+          const chroma = Math.min(
+            range * chromaScale,
+            1 - Math.abs(2 * targetLightness - 1)
+          );
+          const section = hue * 6;
+          const secondary = chroma * (1 - Math.abs((section % 2) - 1));
+          let converted;
+          if (section < 1) converted = [chroma, secondary, 0];
+          else if (section < 2) converted = [secondary, chroma, 0];
+          else if (section < 3) converted = [0, chroma, secondary];
+          else if (section < 4) converted = [0, secondary, chroma];
+          else if (section < 5) converted = [secondary, 0, chroma];
+          else converted = [chroma, 0, secondary];
+          const match = targetLightness - chroma / 2;
+          return `#${converted
+            .map((channel) => Math.round((channel + match) * 255).toString(16).padStart(2, '0'))
+            .join('')}`;
+        }
+
+        function referenceSpatialColor(pointIndex) {
+          const row = Math.floor(pointIndex / 10);
+          const column = pointIndex % 10;
+          const neighborIndices = [
+            pointIndex,
+            row * 10 + Math.max(0, column - 1),
+            row * 10 + Math.min(9, column + 1),
+            Math.max(0, row - 1) * 10 + column,
+            Math.min(4, row + 1) * 10 + column
+          ];
+          return blendHexColors(
+            neighborIndices.map((index) => REFERENCE_CUT_COLOR_FRAME[referenceSampleIndex(index)]),
+            [0.88, 0.03, 0.03, 0.03, 0.03]
+          );
+        }
+
+        function referenceOrbTheme(pointIndex, timeSeconds) {
+          const baseColor = DAFT_REFERENCE_ORB_BASE_COLORS[pointIndex];
+          const danceColor = DAFT_REFERENCE_ORB_BASE_COLORS[
+            (pointIndex + (pointIndex % 3 === 0 ? 7 : 11)) % 50
+          ];
+          const baseRgb = hexToRgb(baseColor);
+          const greenBias = clamp((baseRgb.g - baseRgb.b + 24) / 144);
+          const pulse = (Math.sin((timeSeconds - TIMING.pointTransitionStart) * 1.7 + pointIndex * 0.41) + 1) * 0.5;
+          const blueLedBase = mixHex(
+            baseColor,
+            '#07509f',
+            0.12 + greenBias * 0.28
+          );
+          const dancingBase = mixHex(blueLedBase, danceColor, pulse * 0.075);
+          const baseTheme = {
+            colorStart: setColorLightness(
+              dancingBase,
+              mix(0.43, 0.375, greenBias),
+              0.88
+            ),
+            colorMiddle: setColorLightness(
+              mixHex(baseColor, '#052f70', 0.36 + greenBias * 0.18),
+              0.235,
+              0.9
+            ),
+            colorHighlight: setColorLightness(
+              mixHex(dancingBase, '#1592b5', 0.16 + greenBias * 0.16),
+              mix(0.56, 0.5, greenBias),
+              0.76
+            )
+          };
+          const referenceSpot = DAFT_REFERENCE_SPOT_OVERRIDES[pointIndex];
+          if (!referenceSpot) return baseTheme;
+          const spotProgress = easeInOutSine(smoothstep(
+            TIMING.referenceSpotFadeStart,
+            TIMING.referenceSpotFadeEnd,
+            timeSeconds
+          ));
+          const spotTheme = {
+            colorStart: setColorLightness(
+              referenceSpot.color,
+              referenceSpot.lightness,
+              0.94
+            ),
+            colorMiddle: setColorLightness(
+              mixHex(referenceSpot.color, '#08020d', 0.2),
+              Math.max(0.07, referenceSpot.lightness - 0.13),
+              0.9
+            ),
+            colorHighlight: setColorLightness(
+              mixHex(referenceSpot.color, '#eeeaff', 0.08),
+              Math.min(0.8, referenceSpot.lightness + 0.09),
+              0.84
+            )
+          };
+          return {
+            colorStart: mixHex(baseTheme.colorStart, spotTheme.colorStart, spotProgress),
+            colorMiddle: mixHex(baseTheme.colorMiddle, spotTheme.colorMiddle, spotProgress),
+            colorHighlight: mixHex(baseTheme.colorHighlight, spotTheme.colorHighlight, spotProgress)
+          };
+        }
+
+        function pointColor(pointIndex, timeSeconds) {
+          const theme = referenceOrbTheme(pointIndex, timeSeconds);
+          return blendHexColors(
+            [theme.colorHighlight, theme.colorStart, theme.colorMiddle],
+            [0.14, 0.56, 0.3]
+          );
+        }
+
+        function configure(width, height) {
+          if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+          }
+          if (burstCanvas.width !== width || burstCanvas.height !== height) {
+            burstCanvas.width = width;
+            burstCanvas.height = height;
+          }
+          if (
+            transitionRouteOverlayCanvas.width !== width ||
+            transitionRouteOverlayCanvas.height !== height
+          ) {
+            transitionRouteOverlayCanvas.width = width;
+            transitionRouteOverlayCanvas.height = height;
+          }
+          if (sceneCanvas.width !== width || sceneCanvas.height !== height) {
+            sceneCanvas.width = width;
+            sceneCanvas.height = height;
+          }
+          if (transitionCanvas.width !== width || transitionCanvas.height !== height) {
+            transitionCanvas.width = width;
+            transitionCanvas.height = height;
+          }
+          if (
+            transitionMaskCanvas.width !== width ||
+            transitionMaskCanvas.height !== height
+          ) {
+            transitionMaskCanvas.width = width;
+            transitionMaskCanvas.height = height;
+          }
+          if (pixelCanvas.width !== width || pixelCanvas.height !== height) {
+            pixelCanvas.width = width;
+            pixelCanvas.height = height;
+          }
+          context.imageSmoothingEnabled = true;
+          context.imageSmoothingQuality = 'high';
+          burstContext.imageSmoothingEnabled = true;
+          burstContext.imageSmoothingQuality = 'high';
+          transitionRouteOverlayContext.imageSmoothingEnabled = true;
+          transitionRouteOverlayContext.imageSmoothingQuality = 'high';
+          sceneContext.imageSmoothingEnabled = true;
+          sceneContext.imageSmoothingQuality = 'high';
+          transitionContext.imageSmoothingEnabled = true;
+          transitionContext.imageSmoothingQuality = 'high';
+          transitionMaskContext.imageSmoothingEnabled = true;
+          transitionMaskContext.imageSmoothingQuality = 'high';
+          pixelContext.imageSmoothingEnabled = false;
+          lowResolutionContext.imageSmoothingEnabled = true;
+          lowResolutionContext.imageSmoothingQuality = 'high';
+        }
+
+        function loadImage(url) {
+          if (!url) return Promise.resolve(null);
+          if (!imageCache.has(url)) {
+            imageCache.set(url, new Promise((resolve, reject) => {
+              const image = new Image();
+              image.onload = () => resolve(image);
+              image.onerror = () => reject(new Error(`Could not load image: ${url}`));
+              image.src = url;
+            }));
+          }
+          return imageCache.get(url);
+        }
+
+        function deriveWaterFieldFromImage(image) {
+          const width = 128;
+          const height = 72;
+          const sampleCanvas = document.createElement('canvas');
+          const sampleContext = sampleCanvas.getContext('2d', {
+            alpha: false,
+            willReadFrequently: true
+          });
+          sampleCanvas.width = width;
+          sampleCanvas.height = height;
+          sampleContext.drawImage(image, 0, 0, width, height);
+          const pixels = sampleContext.getImageData(0, 0, width, height).data;
+          const baseScores = new Float32Array(width * height);
+          for (let index = 0; index < baseScores.length; index += 1) {
+            const red = pixels[index * 4];
+            const green = pixels[index * 4 + 1];
+            const blue = pixels[index * 4 + 2];
+            const blueLead = clamp((blue - red) / 72);
+            const blueOverGreen = clamp((blue - green + 34) / 58);
+            const darkOcean = clamp((138 - red) / 115);
+            const vegetation = clamp((green - blue - 2) / 55);
+            baseScores[index] = clamp(
+              blueLead * 0.56 +
+                blueOverGreen * 0.28 +
+                darkOcean * 0.16 -
+                vegetation * 0.72
+            );
+          }
+          const scores = new Uint8Array(width * height);
+          for (let y = 0; y < height; y += 1) {
+            for (let x = 0; x < width; x += 1) {
+              let minimum = 1;
+              let sum = 0;
+              let count = 0;
+              for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+                for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+                  const sampleX = Math.max(0, Math.min(width - 1, x + offsetX));
+                  const sampleY = Math.max(0, Math.min(height - 1, y + offsetY));
+                  const value = baseScores[sampleY * width + sampleX];
+                  minimum = Math.min(minimum, value);
+                  sum += value;
+                  count += 1;
+                }
+              }
+              const center = baseScores[y * width + x];
+              scores[y * width + x] = Math.round(clamp(
+                center * 0.58 + (sum / count) * 0.22 + minimum * 0.2
+              ) * 255);
+            }
+          }
+          return {width, height, scores: Array.from(scores)};
+        }
+
+        async function configureAssets(nextAssets) {
+          assets.worldUrl = nextAssets.worldUrl;
+          assets.flameUrl = nextAssets.flameUrl || null;
+          assets.waterField = nextAssets.waterField || null;
+          pulseRouteCache.clear();
+          assets.world = await loadImage(assets.worldUrl);
+          if (!assets.waterField?.scores?.length) {
+            assets.waterField = deriveWaterFieldFromImage(assets.world);
+          }
+          if (assets.waterField?.scores?.length) {
+            waterFieldCanvas.width = assets.waterField.width;
+            waterFieldCanvas.height = assets.waterField.height;
+            const imageData = waterFieldContext.createImageData(
+              assets.waterField.width,
+              assets.waterField.height
+            );
+            for (let index = 0; index < assets.waterField.scores.length; index += 1) {
+              const water = assets.waterField.scores[index] / 255;
+              const alpha = Math.round(smoothstep(0.34, 0.72, water) * 255);
+              imageData.data[index * 4] = 255;
+              imageData.data[index * 4 + 1] = 255;
+              imageData.data[index * 4 + 2] = 255;
+              imageData.data[index * 4 + 3] = alpha;
+            }
+            waterFieldContext.putImageData(imageData, 0, 0);
+          } else {
+            waterFieldCanvas.width = 1;
+            waterFieldCanvas.height = 1;
+            waterFieldContext.clearRect(0, 0, 1, 1);
+          }
+          if (assets.flameUrl) await loadImage(assets.flameUrl);
+          const deckRuntime = window.__NEWHEAT_CYCLADES_DECK__;
+          if (!deckRuntime) {
+            throw new Error('Cyclades deck.gl runtime was not injected');
+          }
+          await deckRuntime.initialize({
+            canvas: deckCanvas,
+            image: assets.world,
+            bounds: CYCLADES_BASEMAP_BOUNDS,
+            width: window.innerWidth || 1920,
+            height: window.innerHeight || 1080
+          });
+          assets.deckInitialized = true;
+          return true;
+        }
+
+        function drawImageCover(targetContext, image, width, height, zoom = 1) {
+          if (!image) return;
+          const imageRatio = image.naturalWidth / image.naturalHeight;
+          const targetRatio = width / height;
+          let sourceWidth = image.naturalWidth;
+          let sourceHeight = image.naturalHeight;
+          if (imageRatio > targetRatio) {
+            sourceWidth = image.naturalHeight * targetRatio;
+          } else {
+            sourceHeight = image.naturalWidth / targetRatio;
+          }
+          sourceWidth /= zoom;
+          sourceHeight /= zoom;
+          const sourceX = (image.naturalWidth - sourceWidth) / 2;
+          const sourceY = (image.naturalHeight - sourceHeight) / 2;
+          targetContext.drawImage(
+            image,
+            sourceX,
+            sourceY,
+            sourceWidth,
+            sourceHeight,
+            0,
+            0,
+            width,
+            height
+          );
+        }
+
+        function imageDimensions(image) {
+          return {
+            width: image?.naturalWidth || image?.width || 1,
+            height: image?.naturalHeight || image?.height || 1
+          };
+        }
+
+        function worldViewCrop(image, width, height, timeSeconds) {
+          void image;
+          const cameraProgress = clamp(timeSeconds / DURATION_SECONDS);
+          const latitude = CYCLADES_CAMERA.latitudeStart +
+            CYCLADES_LATITUDE_PER_SECOND * clamp(timeSeconds, 0, DURATION_SECONDS);
+          const viewState = {
+            longitude: CYCLADES_CAMERA.longitude,
+            latitude,
+            zoom: CYCLADES_CAMERA.zoom,
+            pitch: CYCLADES_CAMERA.pitch,
+            bearing: CYCLADES_CAMERA.bearing
+          };
+          return {
+            viewState,
+            renderWidth: width,
+            renderHeight: height,
+            longitude: viewState.longitude,
+            latitude,
+            zoom: viewState.zoom,
+            progress: cameraProgress,
+            panX: viewState.longitude,
+            panY: latitude
+          };
+        }
+
+        function mapWorldPoint(point, crop, image, width, height) {
+          const dimensions = imageDimensions(image);
+          return {
+            x: ((point[0] * dimensions.width - crop.x) / crop.width) * width,
+            y: ((point[1] * dimensions.height - crop.y) / crop.height) * height
+          };
+        }
+
+        function catmullRomPoint(points, amount) {
+          const scaled = clamp(amount) * (points.length - 1);
+          const index = Math.min(points.length - 2, Math.floor(scaled));
+          const local = scaled - index;
+          const p0 = points[Math.max(0, index - 1)];
+          const p1 = points[index];
+          const p2 = points[Math.min(points.length - 1, index + 1)];
+          const p3 = points[Math.min(points.length - 1, index + 2)];
+          const coordinate = (axis) =>
+            0.5 *
+            ((2 * p1[axis]) +
+              (-p0[axis] + p2[axis]) * local +
+              (2 * p0[axis] - 5 * p1[axis] + 4 * p2[axis] - p3[axis]) *
+                local ** 2 +
+              (-p0[axis] + 3 * p1[axis] - 3 * p2[axis] + p3[axis]) *
+                local ** 3);
+          return [coordinate(0), coordinate(1)];
+        }
+
+        function tripSamples(route, crop, width, height) {
+          const deckRuntime = window.__NEWHEAT_CYCLADES_DECK__;
+          const samples = [];
+          for (let index = 0; index <= 120; index += 1) {
+            const point = catmullRomPoint(route, index / 120);
+            const [x, y] = deckRuntime.project(
+              point,
+              crop.viewState,
+              width,
+              height
+            );
+            samples.push({x, y});
+          }
+          return samples;
+        }
+
+        function waterScoreAtScreen(screenX, screenY, crop) {
+          const field = assets.waterField;
+          if (!field?.scores?.length) {
+            return clamp(
+              0.76 +
+                Math.sin(screenX * 19 + screenY * 11) * 0.08 +
+                Math.sin(screenX * 43 - screenY * 17) * 0.05
+            );
+          }
+          const deckRuntime = window.__NEWHEAT_CYCLADES_DECK__;
+          const renderWidth = crop.renderWidth || 1920;
+          const renderHeight = crop.renderHeight || 1080;
+          if (!crop.geographicScreenBounds) {
+            const northwest = deckRuntime.unproject(
+              [0, 0],
+              crop.viewState,
+              renderWidth,
+              renderHeight
+            );
+            const southeast = deckRuntime.unproject(
+              [renderWidth, renderHeight],
+              crop.viewState,
+              renderWidth,
+              renderHeight
+            );
+            crop.geographicScreenBounds = {
+              west: northwest[0],
+              north: northwest[1],
+              east: southeast[0],
+              south: southeast[1]
+            };
+          }
+          const longitude = mix(
+            crop.geographicScreenBounds.west,
+            crop.geographicScreenBounds.east,
+            clamp(screenX)
+          );
+          const latitude = mix(
+            crop.geographicScreenBounds.north,
+            crop.geographicScreenBounds.south,
+            clamp(screenY)
+          );
+          const fieldX = clamp(
+            (longitude - CYCLADES_BASEMAP_BOUNDS[0]) /
+              (CYCLADES_BASEMAP_BOUNDS[2] - CYCLADES_BASEMAP_BOUNDS[0])
+          ) * (field.width - 1);
+          const fieldY = clamp(
+            (CYCLADES_BASEMAP_BOUNDS[3] - latitude) /
+              (CYCLADES_BASEMAP_BOUNDS[3] - CYCLADES_BASEMAP_BOUNDS[1])
+          ) * (field.height - 1);
+          const x0 = Math.floor(fieldX);
+          const y0 = Math.floor(fieldY);
+          const x1 = Math.min(field.width - 1, x0 + 1);
+          const y1 = Math.min(field.height - 1, y0 + 1);
+          const amountX = fieldX - x0;
+          const amountY = fieldY - y0;
+          const sample = (x, y) => field.scores[y * field.width + x] / 255;
+          return mix(
+            mix(sample(x0, y0), sample(x1, y0), amountX),
+            mix(sample(x0, y1), sample(x1, y1), amountX),
+            amountY
+          );
+        }
+
+        function findWaterEndpoint(anchor, crop, seed) {
+          let best = [clamp(anchor[0], 0.008, 0.992), clamp(anchor[1], 0.008, 0.992)];
+          let bestScore = Number.NEGATIVE_INFINITY;
+          const horizontalSearch = anchor[0] < 0.08 || anchor[0] > 0.92 ? 0.09 : 0.075;
+          const verticalSearch = anchor[1] < 0.08 || anchor[1] > 0.92 ? 0.075 : 0.09;
+          for (let row = -5; row <= 5; row += 1) {
+            for (let column = -5; column <= 5; column += 1) {
+              const x = clamp(anchor[0] + (column / 5) * horizontalSearch, 0.008, 0.992);
+              const y = clamp(anchor[1] + (row / 5) * verticalSearch, 0.008, 0.992);
+              const distance = Math.hypot(x - anchor[0], y - anchor[1]);
+              const variation = deterministicNoise(seed, row + 11, column + 17) * 0.18;
+              const score = waterScoreAtScreen(x, y, crop) * 3.4 - distance * 3.2 + variation;
+              if (score > bestScore) {
+                bestScore = score;
+                best = [x, y];
+              }
+            }
+          }
+          return best;
+        }
+
+        function buildOceanRoute(spec, crop) {
+          const stepCount = 58;
+          const offsetCount = 61;
+          const centerColumn = Math.floor(offsetCount / 2);
+          const start = spec.endpointsResolved
+            ? spec.start
+            : findWaterEndpoint(spec.start, crop, spec.index * 2 + 1);
+          const end = spec.endpointsResolved
+            ? spec.end
+            : findWaterEndpoint(spec.end, crop, spec.index * 2 + 2);
+          const deltaX = end[0] - start[0];
+          const deltaY = end[1] - start[1];
+          const distance = Math.max(0.001, Math.hypot(deltaX, deltaY));
+          const normalX = -deltaY / distance;
+          const normalY = deltaX / distance;
+          const parents = Array.from(
+            {length: stepCount},
+            () => new Int16Array(offsetCount).fill(-1)
+          );
+          let previousCosts = new Float64Array(offsetCount).fill(Number.POSITIVE_INFINITY);
+          previousCosts[centerColumn] = 0;
+
+          for (let step = 1; step < stepCount; step += 1) {
+            const amount = step / (stepCount - 1);
+            const taper = Math.sin(Math.PI * amount) ** 0.72;
+            const corridor = spec.corridor * taper;
+            const baseX = mix(start[0], end[0], easeInOutSine(amount));
+            const baseY = mix(start[1], end[1], easeInOutSine(amount));
+            const currentCosts = new Float64Array(offsetCount).fill(Number.POSITIVE_INFINITY);
+
+            for (let column = 0; column < offsetCount; column += 1) {
+              const offset = ((column / (offsetCount - 1)) * 2 - 1) * corridor;
+              const screenX = baseX + normalX * offset;
+              const screenY = baseY + normalY * offset;
+              if (screenX < 0.006 || screenX > 0.994 || screenY < 0.006 || screenY > 0.994) {
+                continue;
+              }
+              const water = waterScoreAtScreen(screenX, screenY, crop);
+              const endpointEscape = smoothstep(0.025, 0.14, amount) *
+                (1 - smoothstep(0.86, 0.985, amount));
+              const landCost = endpointEscape *
+                ((1 - water) ** 3 * 76 + (water < 0.48 ? (0.48 - water) * 54 : 0));
+              const centerPressure = Math.abs(column - centerColumn) / centerColumn * 0.055;
+              const organicField =
+                Math.sin(column * 0.29 + step * 0.21 + spec.seed * 17.7) * 0.085 +
+                Math.sin(column * 0.11 - step * 0.39 + spec.index * 1.13) * 0.065 +
+                (deterministicNoise(spec.index, column, step) - 0.5) * 0.055;
+              let bestCost = Number.POSITIVE_INFINITY;
+              let bestParent = -1;
+              for (let shift = -3; shift <= 3; shift += 1) {
+                const previousColumn = column + shift;
+                if (previousColumn < 0 || previousColumn >= offsetCount) continue;
+                const candidateCost =
+                  previousCosts[previousColumn] +
+                  shift ** 2 * 0.13 +
+                  landCost +
+                  centerPressure * 2.8 -
+                  organicField;
+                if (candidateCost < bestCost) {
+                  bestCost = candidateCost;
+                  bestParent = previousColumn;
+                }
+              }
+              currentCosts[column] = bestCost;
+              parents[step][column] = bestParent;
+            }
+            previousCosts = currentCosts;
+          }
+
+          let finalColumn = centerColumn;
+          let finalCost = previousCosts[centerColumn];
+          for (let column = Math.max(0, centerColumn - 3); column <= Math.min(offsetCount - 1, centerColumn + 3); column += 1) {
+            if (previousCosts[column] < finalCost) {
+              finalCost = previousCosts[column];
+              finalColumn = column;
+            }
+          }
+          const columns = new Int16Array(stepCount);
+          columns[stepCount - 1] = finalColumn;
+          for (let step = stepCount - 1; step > 0; step -= 1) {
+            const parent = parents[step][columns[step]];
+            columns[step - 1] = parent < 0 ? centerColumn : parent;
+          }
+
+          const route = [];
+          for (let step = 0; step < stepCount; step += 2) {
+            const amount = step / (stepCount - 1);
+            const taper = Math.sin(Math.PI * amount) ** 0.72;
+            const offset = ((columns[step] / (offsetCount - 1)) * 2 - 1) * spec.corridor * taper;
+            route.push([
+              clamp(mix(start[0], end[0], easeInOutSine(amount)) + normalX * offset),
+              clamp(mix(start[1], end[1], easeInOutSine(amount)) + normalY * offset)
+            ]);
+          }
+          route[0] = start;
+          route.push(end);
+          return route;
+        }
+
+        function smoothOceanHop(points, iterations = 2) {
+          let smoothed = points;
+          for (let iteration = 0; iteration < iterations; iteration += 1) {
+            const next = [smoothed[0]];
+            for (let index = 0; index < smoothed.length - 1; index += 1) {
+              const current = smoothed[index];
+              const following = smoothed[index + 1];
+              next.push([
+                mix(current[0], following[0], 0.25),
+                mix(current[1], following[1], 0.25)
+              ]);
+              next.push([
+                mix(current[0], following[0], 0.75),
+                mix(current[1], following[1], 0.75)
+              ]);
+            }
+            next.push(smoothed.at(-1));
+            smoothed = next;
+          }
+          return smoothed;
+        }
+
+        function resampleOceanRoute(points, maximumPoints = 160) {
+          if (points.length <= maximumPoints) return points;
+          return Array.from({length: maximumPoints}, (_, index) => {
+            const sourceIndex = Math.round(
+              (index / (maximumPoints - 1)) * (points.length - 1)
+            );
+            return points[sourceIndex];
+          });
+        }
+
+        function viewportRouteTerminal(edge, position, routeIndex, entering) {
+          const jitter = (seedUnit(routeIndex, entering ? 73 : 97) - 0.5) * 0.09;
+          const shifted = clamp(position + jitter, 0.04, 0.96);
+          if (edge === 'left') {
+            return {inside: [0.012, position], outside: [-0.18, shifted]};
+          }
+          if (edge === 'right') {
+            return {inside: [0.988, position], outside: [1.18, shifted]};
+          }
+          return {inside: [position, 0.988], outside: [shifted, 1.38]};
+        }
+
+        function routeViewportTerminals(routeIndex, seed, terminalMode = 'distributed') {
+          if (terminalMode === 'top-center-bottom-corners') {
+            const ingressX = clamp(
+              0.5 + (seedUnit(routeIndex, seed * 1000, 7) - 0.5) * 0.22,
+              0.38,
+              0.62
+            );
+            const exitsLeft = routeIndex % 2 === 0;
+            const exitJitter = seedUnit(routeIndex, seed * 1000, 31);
+            const exitX = exitsLeft
+              ? 0.06 + exitJitter * 0.17
+              : 0.77 + exitJitter * 0.17;
+            return {
+              ingressEdge: 'top-center',
+              egressEdge: exitsLeft ? 'bottom-left' : 'bottom-right',
+              ingress: {
+                inside: [ingressX, 0.012],
+                outside: [
+                  clamp(ingressX + (seedUnit(routeIndex, 59, seed) - 0.5) * 0.08, 0.34, 0.66),
+                  -0.28
+                ]
+              },
+              egress: {
+                inside: [exitX, 0.988],
+                outside: [
+                  clamp(exitX + (seedUnit(routeIndex, 83, seed) - 0.5) * 0.1, 0.015, 0.985),
+                  1.34
+                ]
+              }
+            };
+          }
+          const openingRoute = routeIndex < OPENING_ROUTE_SPECS.length;
+          const ingressEdges = ['left', 'bottom', 'right'];
+          const ingressEdge = openingRoute
+            ? 'bottom'
+            : ingressEdges[routeIndex % ingressEdges.length];
+          const egressEdge = ingressEdge === 'left'
+            ? 'right'
+            : ingressEdge === 'right'
+              ? 'left'
+              : routeIndex % 2 === 0
+                ? 'right'
+                : 'left';
+          const ingressPosition = 0.08 + seedUnit(routeIndex, seed * 1000, 13) * 0.84;
+          const egressPosition = 0.08 + seedUnit(routeIndex, seed * 1000, 29) * 0.84;
+          return {
+            ingressEdge,
+            egressEdge,
+            ingress: viewportRouteTerminal(
+              ingressEdge,
+              ingressPosition,
+              routeIndex,
+              true
+            ),
+            egress: viewportRouteTerminal(
+              egressEdge,
+              egressPosition,
+              routeIndex,
+              false
+            )
+          };
+        }
+
+        function namedCycladesRoute(
+          corridorNames,
+          seed,
+          routeIndex,
+          width,
+          height,
+          referenceTime,
+          terminalMode = 'distributed'
+        ) {
+          const cacheKey = [
+            'camera-synced-v2',
+            corridorNames.join('>'),
+            seed.toFixed(5),
+            routeIndex,
+            width,
+            height,
+            referenceTime.toFixed(3),
+            terminalMode
+          ].join(':');
+          if (pulseRouteCache.has(cacheKey)) return pulseRouteCache.get(cacheKey);
+
+          const deckRuntime = window.__NEWHEAT_CYCLADES_DECK__;
+          const crop = worldViewCrop(assets.world, width, height, referenceTime);
+          const terminals = routeViewportTerminals(routeIndex, seed, terminalMode);
+          const islandGates = corridorNames.map((name, islandIndex) => {
+            const projected = deckRuntime.project(
+              CYCLADES_PORTS[name],
+              crop.viewState,
+              width,
+              height
+            );
+            return findWaterEndpoint(
+              [projected[0] / width, projected[1] / height],
+              crop,
+              routeIndex * 41 + islandIndex * 17 + Math.round(seed * 1000)
+            );
+          });
+          const gates = [
+            findWaterEndpoint(
+              terminals.ingress.inside,
+              crop,
+              routeIndex * 43 + Math.round(seed * 1700)
+            ),
+            ...islandGates,
+            findWaterEndpoint(
+              terminals.egress.inside,
+              crop,
+              routeIndex * 47 + Math.round(seed * 1900)
+            )
+          ];
+
+          const normalizedPath = [];
+          for (let segment = 0; segment < gates.length - 1; segment += 1) {
+            const start = gates[segment];
+            const end = gates[segment + 1];
+            const screenDistance = Math.hypot(end[0] - start[0], end[1] - start[1]);
+            const hop = smoothOceanHop(buildOceanRoute({
+              index: routeIndex * 11 + segment,
+              kind: 'named-island-hop',
+              start,
+              end,
+              endpointsResolved: true,
+              corridor: clamp(0.06 + screenDistance * 0.17, 0.085, 0.19),
+              seed: seed + segment * 0.193
+            }, crop));
+            for (let pointIndex = segment === 0 ? 0 : 1; pointIndex < hop.length; pointIndex += 1) {
+              normalizedPath.push(hop[pointIndex]);
+            }
+          }
+          const smoothingPasses = terminalMode === 'top-center-bottom-corners'
+            ? 4
+            : 2;
+          const corridorPath = resampleOceanRoute(
+            smoothOceanHop([
+              terminals.ingress.outside,
+              ...normalizedPath,
+              terminals.egress.outside
+            ], smoothingPasses)
+          );
+          const path = corridorPath.map((point) =>
+            deckRuntime.unproject(
+                [point[0] * width, point[1] * height],
+                crop.viewState,
+                width,
+                height
+              )
+          );
+          pulseRouteCache.set(cacheKey, path);
+          return path;
+        }
+
+        function routeForSpec(
+          spec,
+          width,
+          height,
+          crop = worldViewCrop(assets.world, width, height, spec.startTime)
+        ) {
+          if (spec.path) return spec.path;
+          if (spec.corridorNames) {
+            return namedCycladesRoute(
+              spec.corridorNames,
+              spec.seed,
+              spec.index,
+              width,
+              height,
+              spec.kind === 'bottom-origin-flame-route' ? 2.1 : spec.startTime,
+              spec.terminalMode
+            );
+          }
+          const deckRuntime = window.__NEWHEAT_CYCLADES_DECK__;
+          const start = {x: spec.start[0] * width, y: spec.start[1] * height};
+          const end = {x: spec.end[0] * width, y: spec.end[1] * height};
+          const direction = spec.index % 2 === 0 ? 1 : -1;
+          const control1 = {
+            x: mix(start.x, end.x, 0.34) + direction * width * (0.08 + (spec.index % 4) * 0.018),
+            y: height * (0.22 + (spec.index % 3) * 0.045)
+          };
+          const control2 = {
+            x: mix(start.x, end.x, 0.72) - direction * width * (0.055 + (spec.index % 5) * 0.012),
+            y: mix(start.y, end.y, 0.73)
+          };
+          return Array.from({length: 33}, (_, index) => {
+            const point = cubicPoint(start, control1, control2, end, index / 32);
+            return deckRuntime.unproject(
+              [point.x, point.y],
+              crop.viewState,
+              width,
+              height
+            );
+          });
+        }
+
+        function routeTimestamps(path, startTime, duration) {
+          return path.map((_, index) =>
+            startTime + duration * (index / Math.max(1, path.length - 1))
+          );
+        }
+
+        function openingTripEventsForSpec(spec) {
+          const duration = 0.92;
+          const period = 0.68;
+          return Array.from({length: OPENING_FLOW_PULSE_COUNT}, (_, pulse) => {
+            const startTime = -0.56 + spec.index * 0.038 + pulse * period;
+            return {startTime, duration};
+          });
+        }
+
+        function deckTripData(width, height, timeSeconds, crop) {
+          const openingTrips = timeSeconds < TIMING.mapRevealEnd
+            ? OPENING_ROUTE_SPECS.flatMap((spec) =>
+                openingTripEventsForSpec(spec).map((event, pulse) => {
+                  const path = routeForSpec(spec, width, height, crop);
+                  return {
+                    path,
+                    timestamps: routeTimestamps(path, event.startTime, event.duration),
+                    color: tripRouteRgb(spec.index, pulse, timeSeconds, true),
+                    width: 12 + (spec.index % 3) * 1.8
+                  };
+                })
+              )
+            : [];
+          const cycleTrips = [];
+          const transitionTrips = [];
+          return {openingTrips, cycleTrips, transitionTrips};
+        }
+
+        function tripViewportCoverage(trips, crop, width, height, sampleLimit = 6) {
+          const deckRuntime = window.__NEWHEAT_CYCLADES_DECK__;
+          if (!deckRuntime || !trips.length) {
+            return {
+              offscreenIngressCount: 0,
+              offscreenExitCount: 0,
+              ingressSamples: [],
+              exitSamples: []
+            };
+          }
+          const outside = ([x, y]) => x < 0 || x > width || y < 0 || y > height;
+          let offscreenIngressCount = 0;
+          let offscreenExitCount = 0;
+          const ingressSamples = [];
+          const exitSamples = [];
+          for (const trip of trips) {
+            if (!trip.path?.length) continue;
+            const referenceCrop = Number.isFinite(trip.referenceTime)
+              ? worldViewCrop(assets.world, width, height, trip.referenceTime)
+              : crop;
+            const ingress = deckRuntime.project(
+              trip.path[0],
+              referenceCrop.viewState,
+              width,
+              height
+            );
+            const exit = deckRuntime.project(
+              trip.path.at(-1),
+              referenceCrop.viewState,
+              width,
+              height
+            );
+            if (outside(ingress)) offscreenIngressCount += 1;
+            if (outside(exit)) offscreenExitCount += 1;
+            if (ingressSamples.length < sampleLimit) {
+              ingressSamples.push([ingress[0] / width, ingress[1] / height]);
+              exitSamples.push([exit[0] / width, exit[1] / height]);
+            }
+          }
+          return {
+            offscreenIngressCount,
+            offscreenExitCount,
+            ingressSamples,
+            exitSamples
+          };
+        }
+
+        function activeTripViewportRetention(trips, crop, width, height, timeSeconds) {
+          const deckRuntime = window.__NEWHEAT_CYCLADES_DECK__;
+          const activeTrips = trips.filter((trip) =>
+            timeSeconds >= trip.startTime &&
+            timeSeconds < trip.startTime + trip.duration + trip.trailLength
+          );
+          let visibleActiveTripCount = 0;
+          const visibleRatios = [];
+          for (const trip of activeTrips) {
+            const activeStart = timeSeconds - trip.trailLength;
+            let activePointCount = 0;
+            let visiblePointCount = 0;
+            for (let index = 0; index < trip.path.length; index += 1) {
+              const timestamp = trip.timestamps[index];
+              if (timestamp < activeStart || timestamp > timeSeconds) continue;
+              activePointCount += 1;
+              const [x, y] = deckRuntime.project(
+                trip.path[index],
+                crop.viewState,
+                width,
+                height
+              );
+              if (x >= -width * 0.04 && x <= width * 1.04 && y >= -height * 0.04 && y <= height * 1.04) {
+                visiblePointCount += 1;
+              }
+            }
+            if (visiblePointCount > 0) visibleActiveTripCount += 1;
+            visibleRatios.push(
+              activePointCount > 0 ? visiblePointCount / activePointCount : 0
+            );
+          }
+          return {
+            activeTripCount: activeTrips.length,
+            visibleActiveTripCount,
+            minimumVisiblePointRatio: visibleRatios.length
+              ? Math.min(...visibleRatios)
+              : 1
+          };
+        }
+
+        function drawTripHead(
+          targetContext,
+          point,
+          radius,
+          alpha,
+          hotColor = '#ff4c1c',
+          coreColor = '#fff4d2'
+        ) {
+          const glow = targetContext.createRadialGradient(
+            point.x,
+            point.y,
+            0,
+            point.x,
+            point.y,
+            radius * 2.2
+          );
+          glow.addColorStop(0, colorWithAlpha(coreColor, alpha));
+          glow.addColorStop(0.22, colorWithAlpha(hotColor, alpha * 0.92));
+          glow.addColorStop(1, colorWithAlpha(hotColor, 0));
+          targetContext.fillStyle = glow;
+          targetContext.fillRect(
+            point.x - radius * 2.2,
+            point.y - radius * 2.2,
+            radius * 4.4,
+            radius * 4.4
+          );
+
+        }
+
+        function openingFlowPackets(spec, timeSeconds) {
+          const resolved = smoothstep(0.35, TIMING.openingRoutesResolve, timeSeconds);
+          const trailSeconds = mix(
+            OPENING_FLOW_TRAIL_SECONDS.initial,
+            OPENING_FLOW_TRAIL_SECONDS.resolved,
+            resolved
+          );
+          return openingTripEventsForSpec(spec)
+            .filter((event) =>
+              timeSeconds >= event.startTime &&
+              timeSeconds <= event.startTime + event.duration + trailSeconds
+            )
+            .map((event, packetIndex) => ({
+              head: clamp((timeSeconds - event.startTime) / event.duration),
+              tail: clamp(
+                (timeSeconds - event.startTime - trailSeconds) / event.duration
+              ),
+              alpha: mix(0.48, 1, resolved) * (1 - packetIndex * 0.08)
+            }));
+        }
+
+        function strokeSampleSegment(
+          targetContext,
+          samples,
+          tail,
+          head,
+          color,
+          alpha,
+          lineWidth
+        ) {
+          if (alpha <= 0 || head <= tail) return;
+          const startIndex = Math.max(0, Math.floor(tail * (samples.length - 1)));
+          const endIndex = Math.max(startIndex + 1, Math.ceil(head * (samples.length - 1)));
+          targetContext.beginPath();
+          targetContext.moveTo(samples[startIndex].x, samples[startIndex].y);
+          for (let index = startIndex + 1; index <= endIndex; index += 1) {
+            targetContext.lineTo(samples[index].x, samples[index].y);
+          }
+          targetContext.globalAlpha = alpha;
+          targetContext.strokeStyle = color;
+          targetContext.lineWidth = lineWidth;
+          targetContext.stroke();
+        }
+
+        function drawTripNetwork(targetContext, width, height, timeSeconds, crop) {
+          const enter = smoothstep(0.04, 0.52, timeSeconds);
+          if (enter <= 0 || timeSeconds >= TIMING.mapRevealEnd) return;
+          const outputContext = targetContext;
+          burstContext.setTransform(1, 0, 0, 1, 0, 0);
+          burstContext.globalCompositeOperation = 'source-over';
+          burstContext.globalAlpha = 1;
+          burstContext.clearRect(0, 0, width, height);
+          targetContext = burstContext;
+          targetContext.save();
+          targetContext.globalCompositeOperation = 'screen';
+          targetContext.lineCap = 'round';
+          targetContext.lineJoin = 'round';
+
+          for (const spec of OPENING_ROUTE_SPECS) {
+            const flowAlpha = smoothstep(0.12, 0.68, timeSeconds) *
+              (1 - smoothstep(spec.fadeStart, spec.fadeEnd, timeSeconds));
+            if (flowAlpha <= 0) continue;
+            const route = routeForSpec(spec, width, height, crop);
+            const samples = tripSamples(route, crop, width, height);
+            const resolved = smoothstep(0.24, TIMING.openingRoutesResolve, timeSeconds);
+            const routeTheme = tripRouteTheme(spec.index);
+            const coolIn = smoothstep(1.35, 3.55, timeSeconds);
+            for (const packet of openingFlowPackets(spec, timeSeconds)) {
+              const packetAlpha = enter * flowAlpha * packet.alpha;
+              strokeSampleSegment(
+                targetContext,
+                samples,
+                packet.tail,
+                packet.head,
+                mixHex('#ff2812', routeTheme.outer, coolIn),
+                packetAlpha * mix(0.2, 0.14, resolved),
+                Math.max(10, mix(height * 0.07, height * 0.018, resolved))
+              );
+              strokeSampleSegment(
+                targetContext,
+                samples,
+                packet.tail,
+                packet.head,
+                mixHex(
+                  mixHex('#ff9b22', '#ef2413', resolved),
+                  routeTheme.middle,
+                  coolIn
+                ),
+                packetAlpha * mix(0.42, 0.76, resolved),
+                Math.max(5.2, mix(height * 0.03, height * 0.0085, resolved))
+              );
+              strokeSampleSegment(
+                targetContext,
+                samples,
+                packet.tail,
+                packet.head,
+                mixHex(
+                  mixHex('#ffd074', '#ff4c1b', resolved),
+                  routeTheme.highlight,
+                  coolIn
+                ),
+                packetAlpha * mix(0.56, 0.92, resolved),
+                Math.max(1.8, mix(height * 0.0085, height * 0.0032, resolved))
+              );
+              const headIndex = Math.min(
+                samples.length - 1,
+                Math.round(packet.head * (samples.length - 1))
+              );
+              drawTripHead(
+                targetContext,
+                samples[headIndex],
+                height * mix(0.012, 0.0068, resolved),
+                packetAlpha * 0.58,
+                mixHex('#ff4c1c', routeTheme.middle, coolIn),
+                mixHex('#fff4d2', routeTheme.highlight, coolIn)
+              );
+            }
+          }
+
+          targetContext.restore();
+
+          outputContext.save();
+          outputContext.globalCompositeOperation = 'screen';
+          outputContext.globalAlpha = 1;
+          outputContext.drawImage(burstCanvas, 0, 0);
+          outputContext.restore();
+        }
+
+        function gridOrbs(width, height, timeSeconds = 5.45) {
+          const cx = width / 2;
+          const cy = height / 2;
+          const maxDistance = Math.hypot(width * 0.44, height * 0.4);
+          const finalPolishProgress = easeInOutSine(smoothstep(
+            TIMING.finalPolishStart,
+            TIMING.finalPolishEnd,
+            timeSeconds
+          ));
+          const result = [];
+
+          for (let row = 0; row < 5; row += 1) {
+            const referenceRow = REFERENCE_GRID_ROWS[row];
+            for (let column = 0; column < 10; column += 1) {
+              const index = row * 10 + column;
+              const x = width * mix(referenceRow.xStart, referenceRow.xEnd, column / 9);
+              const y = height * referenceRow.y;
+              const dx = x - cx;
+              const dy = y - cy;
+              const radius =
+                height *
+                referenceRow.radius *
+                mix(1, FINAL_POINT_RADIUS_SCALE, finalPolishProgress);
+              result.push({
+                index,
+                row,
+                column,
+                x,
+                y,
+                dx,
+                dy,
+                radius,
+                color: pointColor(index, timeSeconds),
+                theme: referenceOrbTheme(index, timeSeconds),
+                distanceNorm: Math.hypot(dx, dy) / maxDistance,
+                angle: Math.atan2(dy, dx),
+                seed: fract(index * 0.61803398875)
+              });
+            }
+          }
+          return result;
+        }
+
+        function drawSoftOrb(
+          x,
+          y,
+          radius,
+          theme,
+          alpha,
+          timeSeconds,
+          pointIndex
+        ) {
+          if (radius <= 0 || alpha <= 0) return;
+          context.save();
+          context.globalAlpha = alpha;
+          context.beginPath();
+          context.arc(x, y, radius, 0, TAU);
+          context.clip();
+
+          const motion = timeSeconds * 0.42 + pointIndex * 0.37;
+          const baseAngle = -2.25 + Math.sin(motion * 0.73) * 0.42;
+          const base = context.createLinearGradient(
+            x + Math.cos(baseAngle) * radius,
+            y + Math.sin(baseAngle) * radius,
+            x - Math.cos(baseAngle) * radius,
+            y - Math.sin(baseAngle) * radius
+          );
+          base.addColorStop(0, theme.colorHighlight);
+          base.addColorStop(0.5, theme.colorStart);
+          base.addColorStop(1, theme.colorMiddle);
+          context.fillStyle = base;
+          context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+
+          const highlightX = x + Math.cos(motion) * radius * 0.26;
+          const highlightY = y + Math.sin(motion * 0.91) * radius * 0.25;
+          const bloom = context.createRadialGradient(
+            highlightX,
+            highlightY,
+            0,
+            highlightX,
+            highlightY,
+            radius * 0.82
+          );
+          bloom.addColorStop(0, colorWithAlpha(theme.colorHighlight, 0.74));
+          bloom.addColorStop(0.48, colorWithAlpha(theme.colorHighlight, 0.18));
+          bloom.addColorStop(1, colorWithAlpha(theme.colorHighlight, 0));
+          context.fillStyle = bloom;
+          context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+
+          const accentX = x - Math.cos(motion * 0.83) * radius * 0.34;
+          const accentY = y - Math.sin(motion * 1.07) * radius * 0.3;
+          const accent = context.createRadialGradient(
+            accentX,
+            accentY,
+            0,
+            accentX,
+            accentY,
+            radius * 0.72
+          );
+          accent.addColorStop(0, colorWithAlpha(theme.colorMiddle, 0.48));
+          accent.addColorStop(1, colorWithAlpha(theme.colorMiddle, 0));
+          context.fillStyle = accent;
+          context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+          context.restore();
+        }
+
+        function pixelResolutionAt(timeSeconds) {
+          const progress = smoothstep(
+            TIMING.pixelationStart,
+            TIMING.pixelationEnd,
+            timeSeconds
+          );
+          const organicProgress = easeInOutSine(progress);
+          return {
+            width: Math.round(mix(168, LOW_RESOLUTION.width, organicProgress)),
+            height: Math.round(mix(94, LOW_RESOLUTION.height, organicProgress))
+          };
+        }
+
+        function applyDaftPixelPalette(resolution, timeSeconds) {
+          const amount = easeInOutSine(smoothstep(
+            TIMING.paletteBlendStart,
+            TIMING.pixelationEnd,
+            timeSeconds
+          ));
+          if (amount <= 0) return;
+          lowResolutionContext.save();
+          lowResolutionContext.globalCompositeOperation = 'source-over';
+          const transitionRouteMemory =
+            1 - smoothstep(TIMING.pixelationEnd, TIMING.pointTransitionEnd, timeSeconds);
+          lowResolutionContext.globalAlpha =
+            amount * mix(0.985, 0.34, transitionRouteMemory);
+          for (let y = 0; y < resolution.height; y += 1) {
+            for (let x = 0; x < resolution.width; x += 1) {
+              const targetRow = Math.min(
+                LOW_RESOLUTION.height - 1,
+                Math.floor((y / resolution.height) * LOW_RESOLUTION.height)
+              );
+              const targetColumn = Math.min(
+                LOW_RESOLUTION.width - 1,
+                Math.floor(
+                  (x / resolution.width) * LOW_RESOLUTION.width
+                )
+              );
+              const pointIndex = targetRow * LOW_RESOLUTION.width + targetColumn;
+              lowResolutionContext.fillStyle = pointColor(pointIndex, timeSeconds);
+              lowResolutionContext.fillRect(x, y, 1, 1);
+            }
+          }
+          lowResolutionContext.restore();
+        }
+
+        function roundedRectPath(targetContext, x, y, width, height, radius) {
+          const r = Math.min(radius, width * 0.5, height * 0.5);
+          if (
+            Math.abs(width - height) <= Math.max(width, height) * 0.025 &&
+            r >= Math.min(width, height) * 0.485
+          ) {
+            targetContext.beginPath();
+            targetContext.arc(x + width * 0.5, y + height * 0.5, Math.min(width, height) * 0.5, 0, TAU);
+            targetContext.closePath();
+            return;
+          }
+          targetContext.beginPath();
+          targetContext.moveTo(x + r, y);
+          targetContext.lineTo(x + width - r, y);
+          targetContext.quadraticCurveTo(x + width, y, x + width, y + r);
+          targetContext.lineTo(x + width, y + height - r);
+          targetContext.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+          targetContext.lineTo(x + r, y + height);
+          targetContext.quadraticCurveTo(x, y + height, x, y + height - r);
+          targetContext.lineTo(x, y + r);
+          targetContext.quadraticCurveTo(x, y, x + r, y);
+          targetContext.closePath();
+        }
+
+        function drawPointTransition(width, height, timeSeconds) {
+          const maskProgress = easeInOutSine(smoothstep(
+            TIMING.apertureMaskStart,
+            TIMING.apertureMaskEnd,
+            timeSeconds
+          ));
+          if (maskProgress <= 0) return;
+
+          const deresolveProgress = easeInOutSine(smoothstep(
+            TIMING.pixelationStart,
+            TIMING.pixelationEnd,
+            timeSeconds
+          ));
+          const paletteProgress = easeInOutSine(smoothstep(
+            TIMING.paletteBlendStart,
+            TIMING.pointTransitionEnd,
+            timeSeconds
+          ));
+          const finalPolishProgress = easeInOutSine(smoothstep(
+            TIMING.finalPolishStart,
+            TIMING.finalPolishEnd,
+            timeSeconds
+          ));
+
+          // The transition is owned by one uninterrupted black aperture mask.
+          // The circles do not grow or announce themselves with rims; the map
+          // simply remains visible where the mask has holes.
+          context.save();
+          context.globalCompositeOperation = 'source-over';
+          context.globalAlpha = maskProgress;
+          context.fillStyle = '#000';
+          context.fillRect(0, 0, width, height);
+          context.restore();
+
+          const targetOrbs = gridOrbs(width, height, timeSeconds);
+          for (const targetOrb of targetOrbs) {
+            const pointIndex = targetOrb.index;
+            const centerX = targetOrb.x;
+            const centerY = targetOrb.y;
+            const radius = targetOrb.radius;
+            const diameter = radius * 2;
+            const left = centerX - radius;
+            const top = centerY - radius;
+            const theme = targetOrb.theme;
+            const localDelay = seedUnit(pointIndex, targetOrb.row, targetOrb.column) * 0.045;
+            const localPaletteProgress = easeInOutSine(smoothstep(
+              localDelay,
+              0.98,
+              paletteProgress
+            ));
+
+            context.save();
+            context.beginPath();
+            context.arc(centerX, centerY, radius, 0, TAU);
+            context.closePath();
+            context.clip();
+
+            const mapAlpha =
+              maskProgress *
+              (1 - smoothstep(0.06, 0.72, deresolveProgress));
+            if (mapAlpha > 0) {
+              context.globalAlpha = mapAlpha;
+              context.drawImage(sceneCanvas, 0, 0, width, height);
+            }
+
+            const pixelMapAlpha =
+              maskProgress *
+              smoothstep(0.02, 0.72, deresolveProgress) *
+              (1 - smoothstep(0.08, 0.92, localPaletteProgress));
+            if (pixelMapAlpha > 0) {
+              context.globalAlpha = pixelMapAlpha;
+              context.imageSmoothingEnabled = false;
+              context.drawImage(pixelCanvas, 0, 0, width, height);
+              context.imageSmoothingEnabled = true;
+            }
+
+            const baseSurfaceHighlight = mixHex(theme.colorHighlight, theme.colorStart, 0.72);
+            const innerBridge = mixHex(baseSurfaceHighlight, theme.colorStart, 0.58);
+            const surfaceEdge = mixHex(theme.colorStart, theme.colorMiddle, 0.34);
+            const flushSurface = context.createRadialGradient(
+              centerX - diameter * 0.025 + Math.sin(timeSeconds + pointIndex) * diameter * 0.012,
+              centerY - diameter * 0.028 +
+                Math.cos(timeSeconds * 0.9 + pointIndex) * diameter * 0.01,
+              radius * 0.16,
+              centerX,
+              centerY,
+              radius * 1.18
+            );
+            flushSurface.addColorStop(0, baseSurfaceHighlight);
+            flushSurface.addColorStop(0.58, innerBridge);
+            flushSurface.addColorStop(0.6, theme.colorStart);
+            flushSurface.addColorStop(1, surfaceEdge);
+            context.globalAlpha = maskProgress * localPaletteProgress;
+            context.fillStyle = flushSurface;
+            context.fillRect(left, top, diameter, diameter);
+            if (finalPolishProgress > 0) {
+              const matteTop = mixHex(theme.colorMiddle, theme.colorStart, 0.52);
+              const matteUpper = mixHex(theme.colorStart, theme.colorMiddle, 0.12);
+              const matteCenter = mixHex(
+                mixHex(theme.colorStart, theme.colorHighlight, 0.48),
+                '#ffffff',
+                0.025
+              );
+              const matteBase = mixHex(theme.colorStart, theme.colorMiddle, 0.2);
+              const matteSurface = context.createLinearGradient(
+                left + diameter * 0.08,
+                top,
+                left + diameter * 0.92,
+                top + diameter
+              );
+              matteSurface.addColorStop(0, matteTop);
+              matteSurface.addColorStop(0.34, matteUpper);
+              matteSurface.addColorStop(0.72, matteCenter);
+              matteSurface.addColorStop(1, matteBase);
+              context.globalAlpha =
+                maskProgress * localPaletteProgress * finalPolishProgress;
+              context.fillStyle = matteSurface;
+              context.fillRect(left, top, diameter, diameter);
+            }
+            context.restore();
+          }
+        }
+
+        function updatePixelatedScene(width, height, crop, timeSeconds) {
+          const resolution = pixelResolutionAt(timeSeconds);
+          if (
+            lowResolutionCanvas.width !== resolution.width ||
+            lowResolutionCanvas.height !== resolution.height
+          ) {
+            lowResolutionCanvas.width = resolution.width;
+            lowResolutionCanvas.height = resolution.height;
+          }
+          lowResolutionContext.setTransform(1, 0, 0, 1, 0, 0);
+          lowResolutionContext.imageSmoothingEnabled = true;
+          lowResolutionContext.imageSmoothingQuality = 'high';
+          lowResolutionContext.globalAlpha = 1;
+          lowResolutionContext.globalCompositeOperation = 'source-over';
+          lowResolutionContext.drawImage(
+            sceneCanvas,
+            0,
+            0,
+            width,
+            height,
+            0,
+            0,
+            resolution.width,
+            resolution.height
+          );
+          applyDaftPixelPalette(resolution, timeSeconds);
+          pixelContext.setTransform(1, 0, 0, 1, 0, 0);
+          pixelContext.globalAlpha = 1;
+          pixelContext.globalCompositeOperation = 'source-over';
+          pixelContext.imageSmoothingEnabled = false;
+          pixelContext.drawImage(
+            lowResolutionCanvas,
+            0,
+            0,
+            resolution.width,
+            resolution.height,
+            0,
+            0,
+            width,
+            height
+          );
+        }
+
+        function drawOrganicMapReveal(width, height, timeSeconds, flameImage, progress) {
+          const eased = easeInOutSine(progress);
+          context.globalCompositeOperation = 'source-over';
+          context.globalAlpha = 1;
+          context.fillStyle = '#00132f';
+          context.fillRect(0, 0, width, height);
+
+          // The map never fades in as a second plate. It is the shared surface
+          // from frame zero, beginning soft, dark, and warm before continuously
+          // resolving into crisp water and islands.
+          const clarity = smoothstep(0.015, 0.96, eased);
+          const blur = mix(34, 0, easeInOutSine(clarity));
+          const overscan = blur * 2.2;
+          context.save();
+          context.filter =
+            `blur(${blur.toFixed(2)}px) ` +
+            `saturate(${mix(0.72, 1.04, clarity).toFixed(3)}) ` +
+            `brightness(${mix(0.54, 1, clarity).toFixed(3)})`;
+          context.drawImage(
+            sceneCanvas,
+            -overscan,
+            -overscan,
+            width + overscan * 2,
+            height + overscan * 2
+          );
+          context.restore();
+
+          if (flameImage && eased < 1) {
+            transitionContext.setTransform(1, 0, 0, 1, 0, 0);
+            transitionContext.globalCompositeOperation = 'source-over';
+            transitionContext.globalAlpha = 1;
+            transitionContext.clearRect(0, 0, width, height);
+            drawImageCover(
+              transitionContext,
+              flameImage,
+              width,
+              height,
+              mix(1.015, 1.04, eased)
+            );
+
+            transitionMaskContext.setTransform(1, 0, 0, 1, 0, 0);
+            transitionMaskContext.globalCompositeOperation = 'source-over';
+            transitionMaskContext.clearRect(0, 0, width, height);
+            const fullFlameMemory = 1 - smoothstep(0.025, 0.2, progress);
+            if (fullFlameMemory > 0) {
+              transitionMaskContext.globalAlpha = fullFlameMemory;
+              transitionMaskContext.fillStyle = '#fff';
+              transitionMaskContext.fillRect(0, 0, width, height);
+            }
+
+            // The flame image is progressively constrained to moving windows
+            // on the exact same seven route splines. No complete path ever
+            // hardens into a static line: flame energy keeps travelling while
+            // the windows and their tails narrow into TripsLayer-like flow.
+            const thin = smoothstep(0.015, 0.88, progress);
+            const crop = worldViewCrop(assets.world, width, height, timeSeconds);
+            transitionMaskContext.save();
+            transitionMaskContext.globalAlpha = mix(0.86, 1, thin);
+            transitionMaskContext.strokeStyle = '#fff';
+            transitionMaskContext.lineCap = 'round';
+            transitionMaskContext.lineJoin = 'round';
+            transitionMaskContext.filter = `blur(${mix(36, 1.5, thin).toFixed(2)}px)`;
+            for (const spec of OPENING_ROUTE_SPECS) {
+              const samples = tripSamples(
+                routeForSpec(spec, width, height, crop),
+                crop,
+                width,
+                height
+              );
+              for (const packet of openingFlowPackets(spec, timeSeconds)) {
+                strokeSampleSegment(
+                  transitionMaskContext,
+                  samples,
+                  packet.tail,
+                  packet.head,
+                  '#fff',
+                  mix(0.58, 1, thin) * packet.alpha,
+                  mix(
+                    height * (0.21 + (spec.index % 3) * 0.018),
+                    height * 0.016,
+                    thin
+                  )
+                );
+              }
+            }
+            transitionMaskContext.restore();
+
+            transitionContext.save();
+            transitionContext.globalCompositeOperation = 'destination-in';
+            transitionContext.globalAlpha = 1;
+            transitionContext.drawImage(transitionMaskCanvas, 0, 0);
+            transitionContext.restore();
+
+            context.save();
+            context.globalCompositeOperation = 'screen';
+            context.globalAlpha = 0.54 * (1 - smoothstep(0.91, 1, progress));
+            context.drawImage(transitionCanvas, 0, 0);
+            context.restore();
+            context.save();
+            context.globalCompositeOperation = 'soft-light';
+            context.globalAlpha = 0.34 * (1 - smoothstep(0.95, 1, progress));
+            context.drawImage(transitionCanvas, 0, 0);
+            context.restore();
+          }
+          const extractedRoutes = smoothstep(0.08, 0.66, progress) *
+            (1 - smoothstep(0.95, 1, progress));
+          if (extractedRoutes > 0) {
+            context.save();
+            context.globalCompositeOperation = 'screen';
+            context.globalAlpha = extractedRoutes *
+              mix(0.38, 0.86, smoothstep(0.08, 0.93, progress));
+            context.filter = `blur(${mix(7, 0, smoothstep(0.12, 0.82, eased)).toFixed(2)}px)`;
+            context.drawImage(burstCanvas, 0, 0);
+            context.restore();
+          }
+          context.globalCompositeOperation = 'source-over';
+          context.globalAlpha = mix(0.1, 0, smoothstep(0.18, 0.92, eased));
+          context.fillStyle = '#00152f';
+          context.fillRect(0, 0, width, height);
+          context.globalAlpha = 1;
+        }
+
+        function drawWorld(width, height, timeSeconds, flameImage) {
+          sceneContext.setTransform(1, 0, 0, 1, 0, 0);
+          sceneContext.globalCompositeOperation = 'source-over';
+          sceneContext.globalAlpha = 1;
+          sceneContext.fillStyle = '#001331';
+          sceneContext.fillRect(0, 0, width, height);
+          const crop = worldViewCrop(assets.world, width, height, timeSeconds);
+          sceneContext.drawImage(deckCanvas, 0, 0, width, height);
+
+          const blueGrade = sceneContext.createLinearGradient(0, 0, width, height);
+          blueGrade.addColorStop(0, 'rgba(0, 34, 91, 0.08)');
+          blueGrade.addColorStop(0.58, 'rgba(0, 18, 74, 0.01)');
+          blueGrade.addColorStop(1, 'rgba(0, 7, 38, 0.22)');
+          sceneContext.fillStyle = blueGrade;
+          sceneContext.fillRect(0, 0, width, height);
+
+          const vignette = sceneContext.createRadialGradient(
+            width * 0.5,
+            height * 0.46,
+            height * 0.12,
+            width * 0.5,
+            height * 0.46,
+            width * 0.72
+          );
+          vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+          vignette.addColorStop(0.72, 'rgba(0, 3, 20, 0.04)');
+          vignette.addColorStop(1, 'rgba(0, 2, 15, 0.48)');
+          sceneContext.fillStyle = vignette;
+          sceneContext.fillRect(0, 0, width, height);
+
+          drawTripNetwork(sceneContext, width, height, timeSeconds, crop);
+          updatePixelatedScene(width, height, crop, timeSeconds);
+
+          context.globalCompositeOperation = 'source-over';
+          const mapReveal = smoothstep(
+            TIMING.flameHoldEnd,
+            TIMING.mapRevealEnd,
+            timeSeconds
+          );
+          const pixelation = smoothstep(
+            TIMING.pixelationStart,
+            TIMING.pixelationEnd,
+            timeSeconds
+          );
+          if (mapReveal < 1) {
+            drawOrganicMapReveal(width, height, timeSeconds, flameImage, mapReveal);
+          } else if (pixelation > 0) {
+            context.globalAlpha = 1 - pixelation;
+            context.drawImage(sceneCanvas, 0, 0);
+            context.globalAlpha = pixelation;
+            context.imageSmoothingEnabled = false;
+            context.drawImage(pixelCanvas, 0, 0);
+            context.imageSmoothingEnabled = true;
+          } else {
+            context.globalAlpha = 1;
+            context.drawImage(sceneCanvas, 0, 0);
+          }
+          context.globalAlpha = 1;
+        }
+
+        function cubicPoint(start, control1, control2, end, t) {
+          const inverse = 1 - t;
+          return {
+            x:
+              inverse ** 3 * start.x +
+              3 * inverse ** 2 * t * control1.x +
+              3 * inverse * t ** 2 * control2.x +
+              t ** 3 * end.x,
+            y:
+              inverse ** 3 * start.y +
+              3 * inverse ** 2 * t * control1.y +
+              3 * inverse * t ** 2 * control2.y +
+              t ** 3 * end.y
+          };
+        }
+
+        function burstGeometry(width, height) {
+          const origin = {x: width * 0.5, y: height * 0.145};
+          return {
+            origin,
+            branches: [
+              {
+                control1: {x: width * 0.43, y: height * 0.29},
+                control2: {x: width * 0.2, y: height * 0.57},
+                end: {x: width * 0.035, y: height * 0.965}
+              },
+              {
+                control1: {x: width * 0.57, y: height * 0.29},
+                control2: {x: width * 0.8, y: height * 0.57},
+                end: {x: width * 0.965, y: height * 0.965}
+              }
+            ]
+          };
+        }
+
+        function makePartialBurstPath(origin, branch, reveal) {
+          const path = new Path2D();
+          path.moveTo(origin.x, origin.y);
+          const steps = Math.max(2, Math.ceil(48 * reveal));
+          for (let step = 1; step <= steps; step += 1) {
+            const t = reveal * (step / steps);
+            const point = cubicPoint(
+              origin,
+              branch.control1,
+              branch.control2,
+              branch.end,
+              t
+            );
+            path.lineTo(point.x, point.y);
+          }
+          return path;
+        }
+
+        function deterministicNoise(index, branchIndex, salt = 0) {
+          return fract(
+            Math.sin(index * 127.1 + branchIndex * 311.7 + salt * 74.7) * 43758.5453123
+          );
+        }
+
+        function makeOrganicPlumePath(
+          origin,
+          branch,
+          reveal,
+          height,
+          timeSeconds,
+          branchIndex,
+          widthScale = 1
+        ) {
+          const leftEdge = [];
+          const rightEdge = [];
+          const steps = Math.max(3, Math.ceil(72 * reveal));
+          for (let step = 0; step <= steps; step += 1) {
+            const t = reveal * (step / steps);
+            const point = cubicPoint(
+              origin,
+              branch.control1,
+              branch.control2,
+              branch.end,
+              t
+            );
+            const nextPoint = cubicPoint(
+              origin,
+              branch.control1,
+              branch.control2,
+              branch.end,
+              Math.min(1, t + 0.006)
+            );
+            const tangentLength = Math.max(
+              1,
+              Math.hypot(nextPoint.x - point.x, nextPoint.y - point.y)
+            );
+            const normalX = -(nextPoint.y - point.y) / tangentLength;
+            const normalY = (nextPoint.x - point.x) / tangentLength;
+            const tipTaper = 1 - 0.84 * smoothstep(Math.max(0, reveal - 0.15), reveal, t);
+            const baseWidth = height * (0.014 + 0.105 * t ** 0.7) * tipTaper * widthScale;
+            const leftNoise =
+              1 +
+              Math.sin(t * 47 + timeSeconds * 8.7 + branchIndex * 2.1) * 0.2 +
+              Math.sin(t * 113 - timeSeconds * 5.3) * 0.1;
+            const rightNoise =
+              1 +
+              Math.sin(t * 53 - timeSeconds * 7.9 + branchIndex * 1.7) * 0.19 +
+              Math.sin(t * 97 + timeSeconds * 6.1) * 0.11;
+            leftEdge.push({
+              x: point.x + normalX * baseWidth * leftNoise,
+              y: point.y + normalY * baseWidth * leftNoise
+            });
+            rightEdge.push({
+              x: point.x - normalX * baseWidth * rightNoise,
+              y: point.y - normalY * baseWidth * rightNoise
+            });
+          }
+
+          const path = new Path2D();
+          path.moveTo(leftEdge[0].x, leftEdge[0].y);
+          for (const point of leftEdge.slice(1)) path.lineTo(point.x, point.y);
+          for (const point of rightEdge.reverse()) path.lineTo(point.x, point.y);
+          path.closePath();
+          return path;
+        }
+
+        function drawMaskParticle(targetContext, x, y, radius, alpha) {
+          if (radius <= 0 || alpha <= 0) return;
+          const gradient = targetContext.createRadialGradient(x, y, 0, x, y, radius);
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+          gradient.addColorStop(0.52, `rgba(255, 255, 255, ${alpha * 0.76})`);
+          gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          targetContext.fillStyle = gradient;
+          targetContext.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+        }
+
+        function drawHotParticle(x, y, radius, alpha, coreAmount) {
+          if (radius <= 0 || alpha <= 0) return;
+          const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+          gradient.addColorStop(
+            0,
+            coreAmount > 0.58
+              ? `rgba(255, 250, 194, ${alpha})`
+              : `rgba(255, 129, 24, ${alpha})`
+          );
+          gradient.addColorStop(0.28, `rgba(255, 102, 10, ${alpha * 0.94})`);
+          gradient.addColorStop(0.66, `rgba(255, 37, 4, ${alpha * 0.62})`);
+          gradient.addColorStop(1, 'rgba(151, 0, 0, 0)');
+          context.fillStyle = gradient;
+          context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+        }
+
+        function drawFireBursts(width, height, timeSeconds, flameImage, naturalFireImage) {
+          const reveal = smoothstep(0.28, 2.28, timeSeconds);
+          const fade = 1 - smoothstep(2.55, 4.05, timeSeconds);
+          const alpha = reveal * fade;
+          if (!naturalFireImage || alpha <= 0) return;
+
+          const geometry = burstGeometry(width, height);
+          burstContext.setTransform(1, 0, 0, 1, 0, 0);
+          burstContext.clearRect(0, 0, width, height);
+          burstContext.globalCompositeOperation = 'source-over';
+          burstContext.globalAlpha = 1;
+
+          // The generated plate supplies real flame tongues and broken turbulent
+          // edges. A tiny breathing transform plus the animated NEW HEAT GIF in
+          // soft-light keeps the otherwise still VFX plate alive without turning
+          // its silhouette back into a smooth vector ribbon.
+          const pulse = Math.sin(timeSeconds * 9.2) * 0.004;
+          burstContext.save();
+          burstContext.translate(width * 0.5, height * 0.035);
+          burstContext.scale(1 + pulse, 1 - pulse * 0.55);
+          burstContext.translate(-width * 0.5, -height * 0.035);
+          burstContext.drawImage(naturalFireImage, 0, 0, width, height);
+          if (flameImage) {
+            burstContext.globalCompositeOperation = 'soft-light';
+            burstContext.globalAlpha = 0.16;
+            drawImageCover(burstContext, flameImage, width, height, 1.08);
+          }
+          burstContext.restore();
+
+          // Shoot the plate out of the shared top-center source with a feathered
+          // reveal instead of scaling the whole image up from the middle.
+          const revealY = height * mix(0.035, 1.12, easeOutQuint(reveal));
+          const revealMask = burstContext.createLinearGradient(
+            0,
+            Math.max(0, revealY - height * 0.18),
+            0,
+            revealY
+          );
+          revealMask.addColorStop(0, 'rgba(255,255,255,1)');
+          revealMask.addColorStop(0.58, 'rgba(255,255,255,0.96)');
+          revealMask.addColorStop(1, 'rgba(255,255,255,0)');
+          burstContext.globalCompositeOperation = 'destination-in';
+          burstContext.globalAlpha = 1;
+          burstContext.fillStyle = revealMask;
+          burstContext.fillRect(0, 0, width, revealY);
+
+          context.save();
+          context.globalCompositeOperation = 'screen';
+          context.globalAlpha = alpha * (0.91 + Math.sin(timeSeconds * 13.1) * 0.045);
+          context.drawImage(burstCanvas, 0, 0);
+          context.restore();
+
+          // Moving hot fragments and embers break the still plate on close read.
+          context.save();
+          context.globalCompositeOperation = 'lighter';
+          for (const [branchIndex, branch] of geometry.branches.entries()) {
+            for (let index = 0; index < 96; index += 1) {
+              const seed = deterministicNoise(index, branchIndex, 5);
+              const seed2 = deterministicNoise(index, branchIndex, 7);
+              const t = fract(seed + timeSeconds * mix(0.09, 0.19, seed2));
+              if (t > reveal) continue;
+              const point = cubicPoint(
+                geometry.origin,
+                branch.control1,
+                branch.control2,
+                branch.end,
+                t
+              );
+              const nextPoint = cubicPoint(
+                geometry.origin,
+                branch.control1,
+                branch.control2,
+                branch.end,
+                Math.min(1, t + 0.006)
+              );
+              const tangentLength = Math.max(1, Math.hypot(nextPoint.x - point.x, nextPoint.y - point.y));
+              const normalX = -(nextPoint.y - point.y) / tangentLength;
+              const normalY = (nextPoint.x - point.x) / tangentLength;
+              const jetWidth = height * (0.008 + 0.075 * t ** 0.72);
+              const offset =
+                (Math.sin(index * 1.31 + timeSeconds * 8.4) * 0.42 + (seed - 0.5) * 0.74) *
+                jetWidth;
+              const x = point.x + normalX * offset;
+              const y = point.y + normalY * offset;
+              const radius = jetWidth * mix(0.035, 0.11, seed2) + height * 0.0015;
+              const coreAmount = 1 - Math.abs(offset) / Math.max(1, jetWidth);
+              drawHotParticle(x, y, radius, alpha * mix(0.06, 0.2, seed), coreAmount);
+            }
+          }
+          context.restore();
+        }
+
+        function imageCoverCrop(image, width, height, zoom = 1.03) {
+          const dimensions = imageDimensions(image);
+          const imageRatio = dimensions.width / dimensions.height;
+          const targetRatio = width / height;
+          let sourceWidth = dimensions.width;
+          let sourceHeight = dimensions.height;
+          if (imageRatio > targetRatio) {
+            sourceWidth = dimensions.height * targetRatio;
+          } else {
+            sourceHeight = dimensions.width / targetRatio;
+          }
+          sourceWidth /= zoom;
+          sourceHeight /= zoom;
+          return {
+            x: (dimensions.width - sourceWidth) / 2,
+            y: (dimensions.height - sourceHeight) / 2,
+            width: sourceWidth,
+            height: sourceHeight
+          };
+        }
+
+        function drawProximityPixels(image, orbs, width, height, abstraction) {
+          if (!image || abstraction <= 0) return;
+          const consolidation = smoothstep(0.08, 0.86, abstraction);
+          const pixelAlpha = 1 - smoothstep(0.7, 1, consolidation);
+          if (pixelAlpha <= 0) return;
+          const crop = image === sceneCanvas || image === pixelCanvas
+            ? {x: 0, y: 0, width: image.width, height: image.height}
+            : imageCoverCrop(image, width, height);
+          const cellWidth = orbs[1].x - orbs[0].x;
+          const cellHeight = orbs[10].y - orbs[0].y;
+          const columns = 3;
+          const rows = 2;
+          const sourcePixelWidth = cellWidth / columns;
+          const sourcePixelHeight = cellHeight / rows;
+
+          context.save();
+          context.globalAlpha = pixelAlpha;
+          for (const orb of orbs) {
+            for (let row = 0; row < rows; row += 1) {
+              for (let column = 0; column < columns; column += 1) {
+                const offsetX = (column + 0.5 - columns / 2) * sourcePixelWidth;
+                const offsetY = (row + 0.5 - rows / 2) * sourcePixelHeight;
+                const sourceCenterX = orb.x + offsetX;
+                const sourceCenterY = orb.y + offsetY;
+                const destinationX = mix(sourceCenterX, orb.x + offsetX * 0.045, consolidation);
+                const destinationY = mix(sourceCenterY, orb.y + offsetY * 0.045, consolidation);
+                const destinationWidth = mix(
+                  sourcePixelWidth + 1.2,
+                  orb.radius * 0.66,
+                  consolidation
+                );
+                const destinationHeight = mix(
+                  sourcePixelHeight + 1.2,
+                  orb.radius * 0.66,
+                  consolidation
+                );
+                const sourceX = crop.x + (sourceCenterX / width) * crop.width;
+                const sourceY = crop.y + (sourceCenterY / height) * crop.height;
+                const sourceWidth = (sourcePixelWidth / width) * crop.width;
+                const sourceHeight = (sourcePixelHeight / height) * crop.height;
+                const cornerRadius =
+                  Math.min(destinationWidth, destinationHeight) * 0.5 * consolidation;
+
+                context.save();
+                context.beginPath();
+                context.roundRect(
+                  destinationX - destinationWidth / 2,
+                  destinationY - destinationHeight / 2,
+                  destinationWidth,
+                  destinationHeight,
+                  cornerRadius
+                );
+                context.clip();
+                context.drawImage(
+                  image,
+                  sourceX - sourceWidth / 2,
+                  sourceY - sourceHeight / 2,
+                  sourceWidth,
+                  sourceHeight,
+                  destinationX - destinationWidth / 2,
+                  destinationY - destinationHeight / 2,
+                  destinationWidth,
+                  destinationHeight
+                );
+                context.restore();
+              }
+            }
+          }
+          context.restore();
+        }
+
+        function drawAbstraction(width, height, timeSeconds) {
+          const abstraction = smoothstep(
+            TIMING.pixelationEnd,
+            TIMING.circleTransitionEnd,
+            timeSeconds
+          );
+          if (abstraction <= 0) return;
+
+          const matteAlpha = smoothstep(0.04, 0.72, abstraction);
+          context.save();
+          context.globalAlpha = matteAlpha;
+          context.fillStyle = '#000';
+          context.fillRect(0, 0, width, height);
+          context.restore();
+
+          const orbs = gridOrbs(width, height, timeSeconds);
+          drawProximityPixels(pixelCanvas, orbs, width, height, abstraction);
+          for (const orb of orbs) {
+            const paletteAlpha = smoothstep(0.48, 0.92, abstraction);
+            const dance = smoothstep(12, 13, timeSeconds);
+            const breathing = 1 + Math.sin(timeSeconds * 3.6 + orb.seed * TAU) * 0.045 * dance;
+            const radius =
+              orb.radius *
+              mix(0.72, 1, smoothstep(0.55, 0.95, abstraction)) *
+              breathing;
+            drawSoftOrb(
+              orb.x,
+              orb.y,
+              radius,
+              orb.theme,
+              paletteAlpha,
+              timeSeconds,
+              orb.index
+            );
+          }
+        }
+
+        function drawCrosshairMark(x, y, radius, alpha, rotation = 0) {
+          if (alpha <= 0) return;
+          context.save();
+          context.translate(x, y);
+          context.rotate(rotation);
+          context.globalCompositeOperation = 'screen';
+          context.globalAlpha = alpha;
+          context.strokeStyle = '#ff321e';
+          context.lineWidth = Math.max(1.75, radius * 0.038);
+          context.shadowColor = '#ff1808';
+          context.shadowBlur = radius * 0.28;
+          context.beginPath();
+          context.arc(0, 0, radius, 0, TAU);
+          context.stroke();
+          context.beginPath();
+          context.arc(0, 0, radius * 0.27, 0, TAU);
+          context.stroke();
+          const gap = radius * 0.38;
+          const reach = radius * 1.46;
+          context.beginPath();
+          context.moveTo(-reach, 0);
+          context.lineTo(-gap, 0);
+          context.moveTo(gap, 0);
+          context.lineTo(reach, 0);
+          context.moveTo(0, -reach);
+          context.lineTo(0, -gap);
+          context.moveTo(0, gap);
+          context.lineTo(0, reach);
+          context.stroke();
+          context.restore();
+        }
+
+        function drawCrosshairs(width, height, timeSeconds) {
+          void width;
+          void height;
+          void timeSeconds;
+        }
+
+        async function renderFrame({timeSeconds = 0, width = 1920, height = 1080, flameUrl = null} = {}) {
+          configure(width, height);
+          const time = clamp(timeSeconds, 0, DURATION_SECONDS);
+          const resolvedFlameUrl = flameUrl || assets.flameUrl;
+          const flameImage = resolvedFlameUrl ? await loadImage(resolvedFlameUrl) : null;
+          const crop = worldViewCrop(assets.world, width, height, time);
+          const trips = deckTripData(width, height, time, crop);
+          await window.__NEWHEAT_CYCLADES_DECK__.renderFrame({
+            timeSeconds: time,
+            width,
+            height,
+            viewState: crop.viewState,
+            ...trips
+          });
+
+          context.setTransform(1, 0, 0, 1, 0, 0);
+          context.globalCompositeOperation = 'source-over';
+          context.globalAlpha = 1;
+          context.fillStyle = '#000';
+          context.fillRect(0, 0, width, height);
+
+          drawWorld(width, height, time, flameImage);
+          drawPointTransition(width, height, time);
+          return inspectState(time);
+        }
+
+        function inspectState(timeSeconds) {
+          const time = clamp(timeSeconds, 0, DURATION_SECONDS);
+          const pixelResolution = pixelResolutionAt(time);
+          const camera = worldViewCrop(assets.world, 1920, 1080, time);
+          const inspectedTrips = deckTripData(1920, 1080, time, camera);
+          const inspectedCycleCoverage = tripViewportCoverage(
+            [
+              ...inspectedTrips.cycleTrips,
+              ...inspectedTrips.transitionTrips
+            ],
+            camera,
+            1920,
+            1080
+          );
+          const inspectedTransitionCoverage = tripViewportCoverage(
+            inspectedTrips.transitionTrips,
+            camera,
+            1920,
+            1080,
+            7
+          );
+          const activeTripRetention = activeTripViewportRetention(
+            [
+              ...inspectedTrips.cycleTrips,
+              ...inspectedTrips.transitionTrips
+            ],
+            camera,
+            1920,
+            1080,
+            time
+          );
+          const pointTransitionProgress = smoothstep(
+            TIMING.apertureMaskStart,
+            TIMING.apertureMaskEnd,
+            time
+          );
+          const activeRouteEvents = [];
+          const activeOpeningFlowPackets = OPENING_ROUTE_SPECS.reduce(
+            (count, spec) => count + openingFlowPackets(spec, time).length,
+            0
+          );
+          const deckState = window.__NEWHEAT_CYCLADES_DECK__?.getState() || null;
+          return {
+            durationSeconds: DURATION_SECONDS,
+            timeSeconds: time,
+            orbCount: pointTransitionProgress > 0 ? 50 : 0,
+            authorshipVisible: false,
+            authorshipLayout: 'none; external composition owns the logo',
+            flamePlateVisible: time < TIMING.mapRevealEnd,
+            mapRevealStyle: 'animated flame texture constrained to the same projected geographic paths rendered by deck.gl TripsLayer',
+            mapRevealProgress: smoothstep(
+              TIMING.flameHoldEnd,
+              TIMING.mapRevealEnd,
+              time
+            ),
+            cameraPanProgress: camera.progress,
+            cameraPanPosition: [camera.panX, camera.panY],
+            cameraZoom: camera.zoom,
+            cameraViewType: 'deck.gl MapView with orthographic Web Mercator projection',
+            cameraLocation: {
+              longitude: camera.longitude,
+              latitude: camera.latitude
+            },
+            deckRuntimeReady: assets.deckInitialized,
+            deckLayerTypes: deckState?.layerTypes || [
+              'CycladesBitmapLayer',
+              'TripsLayer'
+            ],
+            routeEventCount: ROUTE_SPECS.length,
+            cycleTripPathCount: CYCLE_TRIP_PATH_COUNT,
+            openingFlowRouteCount: OPENING_ROUTE_SPECS.length,
+            openingStandingRouteCount: 0,
+            openingFlowPulseCountPerRoute: OPENING_FLOW_PULSE_COUNT,
+            openingFlowTrailSeconds: OPENING_FLOW_TRAIL_SECONDS,
+            closingTransitionRouteCount: TRANSITION_BURST_ROUTE_SPECS.length,
+            activeOpeningFlowPackets,
+            singleTripBurstCount: SINGLE_TRIP_BURST_SPECS.length,
+            routesPerBurst: 0,
+            singleTripBurstStartSeconds: null,
+            transitionBurstRouteCount: TRANSITION_BURST_ROUTE_SPECS.length,
+            transitionBurstStartSeconds: null,
+            transitionBurstTravelSeconds: 0,
+            transitionBurstTrailSeconds: 0,
+            transitionBurstLaunchOffsetsSeconds: [],
+            transitionBurstClearSeconds: null,
+            routeBurstTravelSeconds: 0,
+            routeBurstTrailSeconds: 0,
+            singleTripBurstClearSeconds: null,
+            routeFrequencyModel: 'the flame-origin route flow is the only TripsLayer event; no separate post-flame burst is scheduled',
+            routeOriginProgression: ['bottom-origin-flame-route'],
+            routeReferenceTimeModel: 'opening flame-origin TripsLayer paths remain attached to the active moving MapView',
+            tripDestinations: ['named Cyclades island ports', 'cross-Aegean ferry corridors'],
+            tripGeometryModel: 'water-aware smoothed longitude-latitude hops that enter from beyond the viewport, weave between named Cyclades islands, and exit beyond a side edge',
+            tripCoordinateSpace: 'WGS84 longitude-latitude in deck.gl MapView',
+            tripLayerClass: 'TripsLayer',
+            cycleOffscreenIngressCount: inspectedCycleCoverage.offscreenIngressCount,
+            cycleOffscreenExitCount: inspectedCycleCoverage.offscreenExitCount,
+            cycleIngressSamples: inspectedCycleCoverage.ingressSamples,
+            cycleExitSamples: inspectedCycleCoverage.exitSamples,
+            transitionOffscreenIngressCount:
+              inspectedTransitionCoverage.offscreenIngressCount,
+            transitionOffscreenExitCount:
+              inspectedTransitionCoverage.offscreenExitCount,
+            transitionIngressSamples:
+              inspectedTransitionCoverage.ingressSamples,
+            transitionExitSamples:
+              inspectedTransitionCoverage.exitSamples,
+            activeTripCount: activeTripRetention.activeTripCount,
+            visibleActiveTripCount:
+              activeTripRetention.visibleActiveTripCount,
+            minimumVisibleActiveTripPointRatio:
+              activeTripRetention.minimumVisiblePointRatio,
+            tripWaterMaskResolution: assets.waterField
+              ? [assets.waterField.width, assets.waterField.height]
+              : null,
+            activeRouteEvents,
+            coarsePixelationProgress: smoothstep(
+              TIMING.pixelationStart,
+              TIMING.pixelationEnd,
+              time
+            ),
+            currentPixelResolution: [pixelResolution.width, pixelResolution.height],
+            pixelationToPointCycleSeconds: TIMING.pointTransitionEnd - TIMING.pixelationStart,
+            apertureMaskStartSeconds: TIMING.apertureMaskStart,
+            apertureMaskEndSeconds: TIMING.apertureMaskEnd,
+            apertureMaskBeforePixelation:
+              TIMING.apertureMaskEnd <= TIMING.pixelationStart,
+            circleSourceModel: 'a single black mask fades over the resolved MapView while fixed circular holes retain full map detail; after the mask completes, the geography inside those holes de-resolves and cools into the final palette without circle growth, rims, or glow',
+            finalPixelResolution: [LOW_RESOLUTION.width, LOW_RESOLUTION.height],
+            finalPointPattern: FINAL_POINT_PATTERN,
+            activePointMask: 0,
+            pointColorModel: 'flush blue-cyan-teal surfaces that fade into a dark-red top row with two white-lavender top-center points and two dark-red center columns during the final pixel-to-point handoff',
+            referenceSpotFadeSeconds: [
+              TIMING.referenceSpotFadeStart,
+              TIMING.referenceSpotFadeEnd
+            ],
+            referenceSpotFadeProgress: easeInOutSine(smoothstep(
+              TIMING.referenceSpotFadeStart,
+              TIMING.referenceSpotFadeEnd,
+              time
+            )),
+            referenceSpotIndices: Object.keys(DAFT_REFERENCE_SPOT_OVERRIDES).map(Number),
+            brighterCenterRedIndices: [14, 15, 24, 25, 34, 35],
+            brighterCenterRedLightness: [0.31, 0.33, 0.36, 0.34, 0.35, 0.37],
+            finalPolishSeconds: [TIMING.finalPolishStart, TIMING.finalPolishEnd],
+            finalPolishProgress: easeInOutSine(smoothstep(
+              TIMING.finalPolishStart,
+              TIMING.finalPolishEnd,
+              time
+            )),
+            finalPointRadiusScale: FINAL_POINT_RADIUS_SCALE,
+            finalPointSurfaceModel: 'during only the final 0.22 seconds, every circle eases 2% smaller while one bright matte diagonal color gradient replaces radial highlights and separate crown shading',
+            finalGridBounds: {
+              x: [
+                Math.min(...REFERENCE_GRID_ROWS.map((row) => row.xStart)),
+                Math.max(...REFERENCE_GRID_ROWS.map((row) => row.xEnd))
+              ],
+              y: [REFERENCE_GRID_ROWS[0].y, REFERENCE_GRID_ROWS.at(-1).y]
+            },
+            finalPointRadiusNormalized:
+              REFERENCE_GRID_ROWS[0].radius * mix(
+                1,
+                FINAL_POINT_RADIUS_SCALE,
+                easeInOutSine(smoothstep(
+                  TIMING.finalPolishStart,
+                  TIMING.finalPolishEnd,
+                  time
+                ))
+              ),
+            finalPointZoomScale:
+              REFERENCE_GRID_ROWS[0].radius * FINAL_POINT_RADIUS_SCALE / 0.054,
+            finalPointOverflowCount: 0,
+            finalPointViewportMarginsPx: {
+              left: REFERENCE_GRID_ROWS[0].xStart * 1920 - REFERENCE_GRID_ROWS[0].radius * FINAL_POINT_RADIUS_SCALE * 1080,
+              right: (1 - REFERENCE_GRID_ROWS[0].xEnd) * 1920 - REFERENCE_GRID_ROWS[0].radius * FINAL_POINT_RADIUS_SCALE * 1080,
+              top: (REFERENCE_GRID_ROWS[0].y - REFERENCE_GRID_ROWS[0].radius * FINAL_POINT_RADIUS_SCALE) * 1080,
+              bottom: (1 - REFERENCE_GRID_ROWS.at(-1).y - REFERENCE_GRID_ROWS[0].radius * FINAL_POINT_RADIUS_SCALE) * 1080
+            },
+            pointTransitionProgress,
+            circleTransitionIncluded: true,
+            crosshairsVisible: false,
+            finalMode: 'daft-punk-red-top-center-columns-contained-grid',
+            exportShortcut: 'E',
+            singularHeroGlobe: false
+          };
+        }
+
+        window.configureNewHeatAuthorshipAssets = configureAssets;
+        window.renderNewHeatAuthorshipFrame = renderFrame;
+        window.inspectNewHeatAuthorshipState = inspectState;
+
+        const EXPORT_FILENAME = 'newheat-authorship-intro.mp4';
+        function exportNewHeatAuthorship() {
+          const exportUrl = new URL(`./${EXPORT_FILENAME}`, window.location.href).href;
+          const link = document.createElement('a');
+          link.href = exportUrl;
+          link.download = EXPORT_FILENAME;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.__NEWHEAT_LAST_EXPORT__ = {
+            fileName: EXPORT_FILENAME,
+            url: exportUrl,
+            requestedAt: Date.now()
+          };
+          window.dispatchEvent(new CustomEvent('newheat-authorship-export', {
+            detail: window.__NEWHEAT_LAST_EXPORT__
+          }));
+          return exportUrl;
+        }
+
+        window.exportNewHeatAuthorship = exportNewHeatAuthorship;
+        window.addEventListener('keydown', (event) => {
+          const target = event.target;
+          const editable = target instanceof HTMLElement && (
+            target.isContentEditable ||
+            target.matches('input, textarea, select')
+          );
+          if (
+            editable ||
+            event.defaultPrevented ||
+            event.repeat ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.altKey ||
+            event.key.toLowerCase() !== 'e'
+          ) return;
+          event.preventDefault();
+          exportNewHeatAuthorship();
+        });
+
+        window.startNewHeatAuthorshipPreview = async () => {
+          const params = new URLSearchParams(window.location.search);
+          const worldUrl = new URL('./cyclades-world-imagery.jpg', window.location.href).href;
+          const flameUrl = new URL('./NH.gif', window.location.href).href;
+          await configureAssets({worldUrl, flameUrl});
+          if (params.has('time')) {
+            await renderFrame({
+              timeSeconds: Number(params.get('time')),
+              width: window.innerWidth || 1920,
+              height: window.innerHeight || 1080
+            });
+            return;
+          }
+          const startedAt = performance.now();
+          const animate = async (now) => {
+            const elapsed = ((now - startedAt) / 1000) % DURATION_SECONDS;
+            await renderFrame({
+              timeSeconds: elapsed,
+              width: window.innerWidth || 1920,
+              height: window.innerHeight || 1080
+            });
+            requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        };
+      })();
+    </script>
+    <script type="module">
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('offline') !== '1') {
+        await import('./cyclades-deck-scene.mjs?authorship=20260829-red-mask');
+        await window.startNewHeatAuthorshipPreview();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-13",
+  "number": 13,
+  "title": "GlobeView",
+  "kind": "media",
+  "notes": "Since this video - my contributions have gotten consistent - spending most of my time graduating GlobeView. \n        One of my most recent ideas blends the event manager of deck.gl - mjolnir.js, with the motion tracking core of VisualPT.\n        The human and the hammer - thor.gl",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 33.75803242674067,
+      "latitude": 41.66662674120034,
+      "zoom": 1.2689686378421152,
+      "bearing": 5.607849440525282,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "globe-playground",
+    "slot": "13-globeview",
+    "label": "GlobeView animation",
+    "media": null
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "GlobeView",
+      "x": 32,
+      "y": 28,
+      "width": 550,
+      "size": 40,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Consistent contributions since the film",
+      "Most of my time: graduating GlobeView",
+      "Demo Map → Ball, pointer zoom, momentum",
+      "mjolnir.js + VisualPT motion tracking → thor.gl"
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-03",
+  "number": 3,
+  "title": "Friends",
+  "kind": "cue",
+  "notes": "Hands up if you fall out of touch with your friends online? (Social)\nPause. ↑ removes people and their connections together.",
+  "duration": 20,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 1.9,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 580,
+      "y": 70,
+      "width": 650,
+      "height": 580
+    }
+  },
+  "scene": {
+    "preset": "connections",
+    "label": "",
+    "media": null,
+    "slot": null
+  },
+  "overlays": [
+    {
+      "id": "heading",
+      "text": "Falling out of touch\nwith friends online?",
+      "x": 72,
+      "y": 260,
+      "width": 510,
+      "size": 54,
+      "font": "Roboto Black",
+      "color": "#DD9F49",
+      "align": "left"
+    }
+  ],
+  "speaker": {
+    "mode": "exact",
+    "text": "Hands up if you fall out of touch with your friends online?",
+    "points": [
+      "Pause for hands",
+      "↑ removes people and connections together"
+    ]
+  }
+}

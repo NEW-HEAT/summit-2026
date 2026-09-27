@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-08-3",
+  "number": 8,
+  "title": "VisualPT / Analysis",
+  "kind": "media",
+  "notes": "After depth accuracyunable to detect patient leaning with the available models of the time + our aquisition firm seeking a strategic partner instead of placing an investment\n        the incentive to run a father-son medical application fizzled and I pivoted to focusing on my geospatial passions. My First big failure.",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "08-visualpt",
+    "label": "VisualPT / Analysis",
+    "media": "assets/visualpt-analysis.mp4",
+    "fit": "contain",
+    "projectLink": {
+      "url": "https://github.com/VisualPT/visualPT",
+      "label": "VisualPT/visualPT"
+    }
+  },
+  "overlays": [],
+  "part": 3,
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Depth accuracy could not reliably detect leaning",
+      "Potential acquirer wanted a strategic partner",
+      "Father–son project fizzled · first big failure",
+      "Pivot back to geospatial work"
+    ]
+  }
+}

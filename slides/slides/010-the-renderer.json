@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-10",
+  "number": 10,
+  "title": "agintel.ai / Three versions",
+  "kind": "media",
+  "notes": "Around the same time I started building VisualPT - I got hired by a startup serving citrus farmers and insurers around the Americas.\n        When I came in - the company was using Leaflet and had a functional tool that customers were using to analyze groves -  10's to 100,000's of trees.\n        The catch was that the codebase was built in PHP in a few 5000 line files mixing portuguese and english - I was responsible for the rebuild\n\nI quickly realized how much of a bottleneck using Leaflet was above a few thousand items.\n        I found a GPU-driven package called Leaflet.glify and put it to use - but found a ton of issues with it. \n        When I checked the repo - I found it had been unmaintained for years and had accumulated numerous issues and PRs.\nThis was my first big open source moment- I stacked as many PRs as I could and linked as many issues to them, and opened a catchall PR.\n        This got the attention of the owner, and merged, but soon after revealed many more cracks in the system that left me exploring more mature renderers.",
+  "duration": null,
+  "background": "#1D1D1E",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "label": "Three agintel.ai versions from RFC 9942",
+    "media": null,
+    "gallery": [
+      {
+        "src": "assets/agintel-orchard-points.png",
+        "label": "V0 (2020–2023)",
+        "alt": "Satellite grove with flat colored circles"
+      },
+      {
+        "src": "assets/agintel-orchard-columns.png",
+        "label": "V1 (2023–2026)",
+        "alt": "Grove with colored 3D columns"
+      },
+      {
+        "src": "assets/agintel-orchard-trees.png",
+        "label": "Proposed V2 (2026+)",
+        "alt": "Grove with rounded 3D tree canopies"
+      }
+    ],
+    "projectLink": {
+      "url": "https://agintel.ai/",
+      "label": "Agriculture Intelligence"
+    },
+    "flow": "points"
+  },
+  "overlays": [],
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "Citrus farmers and insurers across the Americas",
+      "Tens to hundreds of thousands of trees",
+      "Leaflet + sprawling PHP; Portuguese and English",
+      "Responsible for the rebuild; rendering bottlenecks"
+    ]
+  }
+}

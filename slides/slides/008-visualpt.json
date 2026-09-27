@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-08",
+  "number": 8,
+  "title": "VisualPT / Logo",
+  "kind": "media",
+  "notes": "then, came VisualPT in 2023 - my dad worked for a nationwide phyiscal therapy firm that specialized in balance\n        He was always full of ideas, and a student in CS, I said 'just pay me $10 an hour and i'll engineer your ideas'. He agreed.\n        I built a patient assessment library and I learned all about computer vision.",
+  "duration": null,
+  "background": "#1D3A5F",
+  "view": {
+    "type": "GlobeView",
+    "state": {
+      "longitude": 0,
+      "latitude": 20,
+      "zoom": 0.4,
+      "bearing": 0,
+      "pitch": 0
+    },
+    "frame": {
+      "x": 100,
+      "y": 0,
+      "width": 1080,
+      "height": 720
+    }
+  },
+  "scene": {
+    "preset": "empty",
+    "slot": "08-visualpt",
+    "label": "VisualPT / Logo",
+    "media": "assets/visualpt-logo.jpg",
+    "fit": "cover",
+    "position": [
+      50,
+      50
+    ],
+    "projectLink": {
+      "url": "https://github.com/VisualPT/visualPT",
+      "label": "VisualPT/visualPT"
+    }
+  },
+  "overlays": [],
+  "part": 1,
+  "speaker": {
+    "mode": "cues",
+    "points": [
+      "2023 · Dad’s balance-therapy ideas",
+      "$10/hour to engineer them",
+      "Patient assessments → learning computer vision"
+    ]
+  }
+}
